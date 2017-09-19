@@ -57,8 +57,8 @@ def main():
   # Build 3 layer DNN with 10, 20, 10 units respectively.
   classifier = tf.estimator.DNNClassifier(feature_columns=feature_columns,
                                           hidden_units=[10, 20, 10],
-                                          n_classes=3,
-                                          model_dir="/tmp/iris_model")
+                                          n_classes=2,						# this refers to the number of outputs. in IRIS its 3
+                                          model_dir="/tmp/runwalk_model")
   # Define the training inputs
   train_input_fn = tf.estimator.inputs.numpy_input_fn(
       x={"x": np.array(training_set.data)},
