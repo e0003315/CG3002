@@ -35,14 +35,13 @@ def main():
   if not os.path.exists(RUNWALK_TEST):
   	print("Test file does not exist. \n")
 
-
   # Load datasets.
   training_set = tf.contrib.learn.datasets.base.load_csv_with_header(
-      filename=IRIS_TRAINING,
-      target_dtype=np.int,
-      features_dtype=np.float32)
+      filename=RUNWALK_TRAINING,	# this is the filename, defined above
+      target_dtype=np.int,			# I think "target" refers to the output
+      features_dtype=np.float32)	# This should be refering to the data
   test_set = tf.contrib.learn.datasets.base.load_csv_with_header(
-      filename=IRIS_TEST,
+      filename=RUNWALK_TEST,
       target_dtype=np.int,
       features_dtype=np.float32)
 
