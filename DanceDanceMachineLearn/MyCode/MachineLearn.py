@@ -55,7 +55,7 @@ def main():
       features_dtype=np.float32)
 
   # Specify that all features have real-value data
-  feature_columns = [tf.feature_column.numeric_column("x", shape=[4])]
+  feature_columns = [tf.feature_column.numeric_column("x", shape=[6])] #for iris it was 6
 
   # Build 3 layer DNN with 10, 20, 10 units respectively.
   classifier = tf.estimator.DNNClassifier(feature_columns=feature_columns,
