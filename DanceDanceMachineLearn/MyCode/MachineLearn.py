@@ -18,6 +18,8 @@ CSV_COLUMNS = ["date", "time", "username", "wrist", "activity",
 # Data sets
 RUNWALK_TRAINING = "runwalk_training.csv" #IRIS_TRAINING = "iris_training.csv"
 IRIS_TRAINING_URL = "http://download.tensorflow.org/data/iris_training.csv"
+RUNWALK_TRAINING = "runWalk.csv"
+RUNWALK_TRAINING_URL = "https://www.kaggle.com/vmalyi/run-or-walk/downloads/dataset.csv"
 
 RUNWALK_TEST = "runwalk_test.csv" #IRIS_TEST = "iris_test.csv"
 IRIS_TEST_URL = "http://download.tensorflow.org/data/iris_test.csv"
@@ -46,6 +48,7 @@ def main():
       filename=RUNWALK_TRAINING,	# this is the filename, defined above
       target_dtype=np.int,			# I think "target" refers to the output
       features_dtype=np.float32)	# This should be refering to the data
+
   test_set = tf.contrib.learn.datasets.base.load_csv_with_header(
       filename=RUNWALK_TEST,
       target_dtype=np.int,
