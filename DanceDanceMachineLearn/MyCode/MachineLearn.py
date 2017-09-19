@@ -9,6 +9,12 @@ import urllib.request
 import numpy as np
 import tensorflow as tf
 
+#defining the csv columns into this variable but im unsure how to use it yet
+CSV_COLUMNS = ["date", "time", "username", "wrist", "activity",
+ "acceleration_x", "acceleration_y", "acceleration_z",
+ "gyro_x", "gyro_y", "gyro_z"
+]
+
 # Data sets
 RUNWALK_TRAINING = "runwalk_training.csv" #IRIS_TRAINING = "iris_training.csv"
 IRIS_TRAINING_URL = "http://download.tensorflow.org/data/iris_training.csv"
