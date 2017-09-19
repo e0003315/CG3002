@@ -18,7 +18,6 @@ CSV_COLUMNS = ["date", "time", "username", "wrist", "activity",
 # Data sets
 RUNWALK_TRAINING = "runwalk_training.csv" #IRIS_TRAINING = "iris_training.csv"
 IRIS_TRAINING_URL = "http://download.tensorflow.org/data/iris_training.csv"
-RUNWALK_TRAINING = "runWalk_training.csv"
 RUNWALK_TRAINING_URL = "https://www.kaggle.com/vmalyi/run-or-walk/downloads/dataset.csv"
 
 RUNWALK_TEST = "runwalk_test.csv" #IRIS_TEST = "iris_test.csv"
@@ -55,7 +54,7 @@ def main():
       features_dtype=np.float32)
 
   # Specify that all features have real-value data
-  feature_columns = [tf.feature_column.numeric_column("x", shape=[4])]
+  feature_columns = [tf.feature_column.numeric_column("x", shape=[6])] #for iris it was 4
 
   # Build 3 layer DNN with 10, 20, 10 units respectively.
   classifier = tf.estimator.DNNClassifier(feature_columns=feature_columns,
@@ -84,21 +83,21 @@ def main():
 
   print("\nTest Accuracy: {0:f}\n".format(accuracy_score))
 
-  # Classify two new flower samples.
-  new_samples = np.array(
-      [[6.4, 3.2, 4.5, 1.5],
-       [5.8, 3.1, 5.0, 1.7]], dtype=np.float32)
-  predict_input_fn = tf.estimator.inputs.numpy_input_fn(
-      x={"x": new_samples},
-      num_epochs=1,
-      shuffle=False)
+  # # Classify two new flower samples.
+  # new_samples = np.array(
+  #     [[6.4, 3.2, 4.5, 1.5],
+  #      [5.8, 3.1, 5.0, 1.7]], dtype=np.float32)
+  # predict_input_fn = tf.estimator.inputs.numpy_input_fn(
+  #     x={"x": new_samples},
+  #     num_epochs=1,
+  #     shuffle=False)
 
-  predictions = list(classifier.predict(input_fn=predict_input_fn))
-  predicted_classes = [p["classes"] for p in predictions]
+  # predictions = list(classifier.predict(input_fn=predict_input_fn))
+  # predicted_classes = [p["classes"] for p in predictions]
 
-  print(
-      "New Samples, Class Predictions:    {}\n"
-      .format(predicted_classes))
+  # print(
+  #     "New Samples, Class Predictions:    {}\n"
+  #     .format(predicted_classes))
 
 if __name__ == "__main__":
     main()
