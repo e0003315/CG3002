@@ -18,7 +18,7 @@ from sklearn.svm import SVC
 # url = "https://www.kaggle.com/vmalyi/run-or-walk/downloads/dataset.csv"
 # url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"
 # names = ['sepal-length', 'sepal-width', 'petal-length', 'petal-width', 'class']
-url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/DanceDanceMachineLearn/MyCode/dataset.csv"
+url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/DanceDanceMachineLearn/MyCode/data2.csv"
 names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
 dataset = pandas.read_csv(url, names=names)
 
@@ -58,12 +58,12 @@ scoring = 'accuracy'
 
 # Spot Check Algorithms
 models = []
-models.append(('LR', LogisticRegression()))
-models.append(('LDA', LinearDiscriminantAnalysis()))
+# models.append(('LR', LogisticRegression()))
+# models.append(('LDA', LinearDiscriminantAnalysis()))
 models.append(('KNN', KNeighborsClassifier()))
 models.append(('CART', DecisionTreeClassifier()))
-models.append(('NB', GaussianNB()))
-models.append(('SVM', SVC()))
+# models.append(('NB', GaussianNB()))
+# models.append(('SVM', SVC()))
 # evaluate each model in turn
 results = []
 names = []
@@ -92,12 +92,12 @@ print(accuracy_score(Y_validation, predictions))
 print(confusion_matrix(Y_validation, predictions))
 print(classification_report(Y_validation, predictions))
   
-svm = SVC()
-svm.fit(X_train, Y_train)
-predictSVM = svm.predict(X_validation)
-print(accuracy_score(Y_validation, predictSVM))
-print(confusion_matrix(Y_validation, predictSVM))
-print(classification_report(Y_validation, predictSVM))
+# svm = SVC()
+# svm.fit(X_train, Y_train)
+# predictSVM = svm.predict(X_validation)
+# print(accuracy_score(Y_validation, predictSVM))
+# print(confusion_matrix(Y_validation, predictSVM))
+# print(classification_report(Y_validation, predictSVM))
 
 a = input()
 while (a != "0"):
