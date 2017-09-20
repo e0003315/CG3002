@@ -28,36 +28,39 @@ import tensorflow as tf
 
 
 CSV_COLUMNS = [
-    "age", "workclass", "fnlwgt", "education", "education_num",
-    "marital_status", "occupation", "relationship", "race", "gender",
-    "capital_gain", "capital_loss", "hours_per_week", "native_country",
-    "income_bracket"
+    "accel_x", "accel_y", "accel_z", "gyro_x", "gyro_y", "gyro_z"
 ]
+# CSV_COLUMNS = [
+#     "age", "workclass", "fnlwgt", "education", "education_num",
+#     "marital_status", "occupation", "relationship", "race", "gender",
+#     "capital_gain", "capital_loss", "hours_per_week", "native_country",
+#     "income_bracket"
+# ]
 
-gender = tf.feature_column.categorical_column_with_vocabulary_list(
-    "gender", ["Female", "Male"])
-education = tf.feature_column.categorical_column_with_vocabulary_list(
-    "education", [
-        "Bachelors", "HS-grad", "11th", "Masters", "9th",
-        "Some-college", "Assoc-acdm", "Assoc-voc", "7th-8th",
-        "Doctorate", "Prof-school", "5th-6th", "10th", "1st-4th",
-        "Preschool", "12th"
-    ])
-marital_status = tf.feature_column.categorical_column_with_vocabulary_list(
-    "marital_status", [
-        "Married-civ-spouse", "Divorced", "Married-spouse-absent",
-        "Never-married", "Separated", "Married-AF-spouse", "Widowed"
-    ])
-relationship = tf.feature_column.categorical_column_with_vocabulary_list(
-    "relationship", [
-        "Husband", "Not-in-family", "Wife", "Own-child", "Unmarried",
-        "Other-relative"
-    ])
-workclass = tf.feature_column.categorical_column_with_vocabulary_list(
-    "workclass", [
-        "Self-emp-not-inc", "Private", "State-gov", "Federal-gov",
-        "Local-gov", "?", "Self-emp-inc", "Without-pay", "Never-worked"
-    ])
+# gender = tf.feature_column.categorical_column_with_vocabulary_list(
+#     "gender", ["Female", "Male"])
+# education = tf.feature_column.categorical_column_with_vocabulary_list(
+#     "education", [
+#         "Bachelors", "HS-grad", "11th", "Masters", "9th",
+#         "Some-college", "Assoc-acdm", "Assoc-voc", "7th-8th",
+#         "Doctorate", "Prof-school", "5th-6th", "10th", "1st-4th",
+#         "Preschool", "12th"
+#     ])
+# marital_status = tf.feature_column.categorical_column_with_vocabulary_list(
+#     "marital_status", [
+#         "Married-civ-spouse", "Divorced", "Married-spouse-absent",
+#         "Never-married", "Separated", "Married-AF-spouse", "Widowed"
+#     ])
+# relationship = tf.feature_column.categorical_column_with_vocabulary_list(
+#     "relationship", [
+#         "Husband", "Not-in-family", "Wife", "Own-child", "Unmarried",
+#         "Other-relative"
+#     ])
+# workclass = tf.feature_column.categorical_column_with_vocabulary_list(
+#     "workclass", [
+#         "Self-emp-not-inc", "Private", "State-gov", "Federal-gov",
+#         "Local-gov", "?", "Self-emp-inc", "Without-pay", "Never-worked"
+#     ])
 
 # To show an example of hashing:
 occupation = tf.feature_column.categorical_column_with_hash_bucket(
@@ -66,45 +69,60 @@ native_country = tf.feature_column.categorical_column_with_hash_bucket(
     "native_country", hash_bucket_size=1000)
 
 # Continuous base columns.
-age = tf.feature_column.numeric_column("age")
-education_num = tf.feature_column.numeric_column("education_num")
-capital_gain = tf.feature_column.numeric_column("capital_gain")
-capital_loss = tf.feature_column.numeric_column("capital_loss")
-hours_per_week = tf.feature_column.numeric_column("hours_per_week")
+accel_x = tf.feature_column.numeric_column("accel_x")
+accel_y = tf.feature_column.numeric_column("accel_y")
+accel_z = tf.feature_column.numeric_column("accel_z")
+gyro_x = tf.feature_column.numeric_column("gyro_x")
+gyro_y = tf.feature_column.numeric_column("gyro_y")
+gyro_z = tf.feature_column.numeric_column("gyro_z")
+# age = tf.feature_column.numeric_column("age")
+# education_num = tf.feature_column.numeric_column("education_num")
+# capital_gain = tf.feature_column.numeric_column("capital_gain")
+# capital_loss = tf.feature_column.numeric_column("capital_loss")
+# hours_per_week = tf.feature_column.numeric_column("hours_per_week")
 
 # Transformations.
-age_buckets = tf.feature_column.bucketized_column(
-    age, boundaries=[18, 25, 30, 35, 40, 45, 50, 55, 60, 65])
+# age_buckets = tf.feature_column.bucketized_column(
+#     age, boundaries=[18, 25, 30, 35, 40, 45, 50, 55, 60, 65])
 
 # Wide columns and deep columns.
 base_columns = [
-    gender, education, marital_status, relationship, workclass, occupation,
-    native_country, age_buckets,
+    accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z,
 ]
+# base_columns = [
+#     gender, education, marital_status, relationship, workclass, occupation,
+#     native_country, age_buckets,
+# ]
 
 crossed_columns = [
     tf.feature_column.crossed_column(
-        ["education", "occupation"], hash_bucket_size=1000),
+        ["accel_x", "accel_y", "accel_z"], hash_bucket_size=1000),
     tf.feature_column.crossed_column(
-        [age_buckets, "education", "occupation"], hash_bucket_size=1000),
-    tf.feature_column.crossed_column(
-        ["native_country", "occupation"], hash_bucket_size=1000)
+        ["gyro_x", "gyro_y", "gyro_z"], hash_bucket_size=1000)
 ]
+# crossed_columns = [
+#     tf.feature_column.crossed_column(
+#         ["education", "occupation"], hash_bucket_size=1000),
+#     tf.feature_column.crossed_column(
+#         [age_buckets, "education", "occupation"], hash_bucket_size=1000),
+#     tf.feature_column.crossed_column(
+#         ["native_country", "occupation"], hash_bucket_size=1000)
+# ]
 
-deep_columns = [
-    tf.feature_column.indicator_column(workclass),
-    tf.feature_column.indicator_column(education),
-    tf.feature_column.indicator_column(gender),
-    tf.feature_column.indicator_column(relationship),
-    # To show an example of embedding
-    tf.feature_column.embedding_column(native_country, dimension=8),
-    tf.feature_column.embedding_column(occupation, dimension=8),
-    age,
-    education_num,
-    capital_gain,
-    capital_loss,
-    hours_per_week,
-]
+# deep_columns = [
+#     tf.feature_column.indicator_column(workclass),
+#     tf.feature_column.indicator_column(education),
+#     tf.feature_column.indicator_column(gender),
+#     tf.feature_column.indicator_column(relationship),
+#     # To show an example of embedding
+#     tf.feature_column.embedding_column(native_country, dimension=8),
+#     tf.feature_column.embedding_column(occupation, dimension=8),
+#     age,
+#     education_num,
+#     capital_gain,
+#     capital_loss,
+#     hours_per_week,
+# ]
 
 
 def maybe_download(train_data, test_data):
@@ -143,16 +161,16 @@ def build_estimator(model_dir, model_type):
   if model_type == "wide":
     m = tf.estimator.LinearClassifier(
         model_dir=model_dir, feature_columns=base_columns + crossed_columns)
-  elif model_type == "deep":
-    m = tf.estimator.DNNClassifier(
-        model_dir=model_dir,
-        feature_columns=deep_columns,
-        hidden_units=[100, 50])
+#   elif model_type == "deep":
+#     m = tf.estimator.DNNClassifier(
+#         model_dir=model_dir,
+#         feature_columns=deep_columns,
+#         hidden_units=[100, 50])
   else:
     m = tf.estimator.DNNLinearCombinedClassifier(
         model_dir=model_dir,
         linear_feature_columns=crossed_columns,
-        dnn_feature_columns=deep_columns,
+#         dnn_feature_columns=deep_columns,
         dnn_hidden_units=[100, 50])
   return m
 
@@ -167,10 +185,11 @@ def input_fn(data_file, num_epochs, shuffle):
       skiprows=1)
   # remove NaN elements
   df_data = df_data.dropna(how="any", axis=0)
-  labels = df_data["income_bracket"].apply(lambda x: ">50K" in x).astype(int)
+#   labels = df_data["income_bracket"].apply(lambda x: ">50K" in x).astype(int)
   return tf.estimator.inputs.pandas_input_fn(
       x=df_data,
-      y=labels,
+      y=None,
+#       y=labels,
       batch_size=100,
       num_epochs=num_epochs,
       shuffle=shuffle,
@@ -228,13 +247,13 @@ if __name__ == "__main__":
   parser.add_argument(
       "--train_data",
       type=str,
-      default="adult.csv",
+      default="runwalk_training.csv",
       help="Path to the training data."
   )
   parser.add_argument(
       "--test_data",
       type=str,
-      default="adultTest.csv",
+      default="runwalk_test.csv",
       help="Path to the test data."
   )
   FLAGS, unparsed = parser.parse_known_args()
