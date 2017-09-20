@@ -1,4 +1,5 @@
 # Load libraries
+from six.moves import input
 import pandas
 from pandas.tools.plotting import scatter_matrix
 import matplotlib.pyplot as plt
@@ -44,6 +45,9 @@ dataset = pandas.read_csv(url, names=names)
 array = dataset.values
 X = array[:,0:6]
 Y = array[:,6]
+# print(array)
+# print(X)
+# print(Y)
 validation_size = 0.20
 seed = 7
 X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, test_size=validation_size, random_state=seed)
@@ -70,7 +74,7 @@ for name, model in models:
     names.append(name)
     msg = "%s: %f (%f)" % (name, cv_results.mean(), cv_results.std())
     print(msg)
-    
+     
 # Compare Algorithms
 # fig = plt.figure()
 # fig.suptitle('Algorithm Comparison')
@@ -78,18 +82,27 @@ for name, model in models:
 # plt.boxplot(results)
 # ax.set_xticklabels(names)
 # plt.show()
-
+ 
 # Make predictions on validation dataset
 knn = KNeighborsClassifier()
 knn.fit(X_train, Y_train)
 predictions = knn.predict(X_validation)
+# print(predictions)
 print(accuracy_score(Y_validation, predictions))
 print(confusion_matrix(Y_validation, predictions))
 print(classification_report(Y_validation, predictions))
-
+  
 svm = SVC()
 svm.fit(X_train, Y_train)
 predictSVM = svm.predict(X_validation)
 print(accuracy_score(Y_validation, predictSVM))
 print(confusion_matrix(Y_validation, predictSVM))
 print(classification_report(Y_validation, predictSVM))
+
+a = input()
+while (a != "0"):
+    my_list = a.split()
+    matrix = [my_list]
+    predictions = knn.predict(matrix)
+    print(predictions)
+    a = input()
