@@ -22,7 +22,7 @@ from sklearn.svm import SVC
 url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/DanceDanceMachineLearn/MyCode/data2.csv"
 names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
 dataset = pandas.read_csv(url, names=names)
-
+window_size = 80
 #shape
 # print(dataset.shape)
 #head
@@ -42,6 +42,14 @@ dataset = pandas.read_csv(url, names=names)
 # scatter_matrix(dataset)
 # plt.show()
 
+N = dataset.shape[0]
+dim = dataset.shape[1]
+K = N/window_size
+segments = numpy.empty((K, window_size, dim))
+for i in range(K):
+    segment = dataset[i*window_size:i*window_size+window_size, :]
+    segments[i] = numpy.vstack(segment)
+    
 # Split-out validation dataset
 array = dataset.values
 # array = normalised_data.values
