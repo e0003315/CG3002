@@ -1,6 +1,7 @@
 # Load libraries
 from six.moves import input
 import pandas
+import numpy
 from pandas.tools.plotting import scatter_matrix
 import matplotlib.pyplot as plt
 from sklearn import model_selection
