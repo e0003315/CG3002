@@ -20,7 +20,8 @@ from sklearn.svm import SVC
 # url = "https://www.kaggle.com/vmalyi/run-or-walk/downloads/dataset.csv"
 # url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"
 # names = ['sepal-length', 'sepal-width', 'petal-length', 'petal-width', 'class']
-url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/DanceDanceMachineLearn/MyCode/data2.csv"
+url = "C:/Users/CheeYeo/Desktop/CG3002/Code/DanceDanceMachineLearn/MyCode/data2.csv" #CY's computer file path
+#url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/DanceDanceMachineLearn/MyCode/data2.csv" #Kelvin's computer file path
 names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
 dataset = pandas.read_csv(url, names=names)
 window_size = 80
