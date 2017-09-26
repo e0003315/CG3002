@@ -20,8 +20,8 @@ from sklearn.svm import SVC
 # url = "https://www.kaggle.com/vmalyi/run-or-walk/downloads/dataset.csv"
 # url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"
 # names = ['sepal-length', 'sepal-width', 'petal-length', 'petal-width', 'class']
-url = "C:/Users/CheeYeo/Desktop/CG3002/Code/DanceDanceMachineLearn/MyCode/data2.csv" #CY's computer file path
-#url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/DanceDanceMachineLearn/MyCode/data2.csv" #Kelvin's computer file path
+# url = "C:/Users/CheeYeo/Desktop/CG3002/Code/DanceDanceMachineLearn/MyCode/data2.csv" #CY's computer file path
+url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/DanceDanceMachineLearn/MyCode/data2.csv" #Kelvin's computer file path
 names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
 dataset = pandas.read_csv(url, names=names)
 window_size = 80
@@ -44,14 +44,6 @@ window_size = 80
 # scatter_matrix(dataset)
 # plt.show()
 
-N = dataset.shape[0]
-dim = dataset.shape[1]
-K = N//window_size
-segments = numpy.empty((K, window_size, dim - 1))
-for i in range(K):
-    segment = dataset.iloc[i*window_size : (i*window_size ) + window_size , 0 : 6]
-    segments[i] = segment
-    
 # Split-out validation dataset
 array = dataset.values
 # array = normalised_data.values
@@ -60,6 +52,21 @@ Y = array[:,6]
 
 # normalization
 normalised_data = preprocessing.normalize(X)
+
+# label encode
+le = preprocessing.LabelEncoder()
+le.fit(['sit', 'walk', 'stairsdown'])
+# print(list(le.classes_))
+Y_encoded = le.transform(Y)
+# print(Y_encoded)
+
+N = dataset.shape[0]
+dim = dataset.shape[1]
+K = N//window_size
+segments = numpy.empty((K, window_size, dim - 1))
+for i in range(K):
+    segment = dataset.iloc[i*window_size : (i*window_size ) + window_size , 0 : 6]
+    segments[i] = segment
 
 # print(array)
 # print(X)
