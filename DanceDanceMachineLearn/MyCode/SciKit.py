@@ -46,11 +46,11 @@ window_size = 80
 
 N = dataset.shape[0]
 dim = dataset.shape[1]
-K = N/window_size
-segments = numpy.empty((K, window_size, dim))
+K = N//window_size
+segments = numpy.empty((K, window_size, dim - 1))
 for i in range(K):
-    segment = dataset[i*window_size:i*window_size+window_size, :]
-    segments[i] = numpy.vstack(segment)
+    segment = dataset.iloc[i*window_size : (i*window_size ) + window_size , 0 : 6]
+    segments[i] = segment
     
 # Split-out validation dataset
 array = dataset.values
