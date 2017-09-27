@@ -116,7 +116,7 @@ scoring = 'accuracy'
 models = []
 # models.append(('LR', LogisticRegression()))
 # models.append(('LDA', LinearDiscriminantAnalysis()))
-models.append(('KNN', KNeighborsClassifier()))
+models.append(('KNN', KNeighborsClassifier(n_neighbors = 8)))
 models.append(('CART', DecisionTreeClassifier()))
 # models.append(('NB', GaussianNB()))
 # models.append(('SVM', SVC()))
