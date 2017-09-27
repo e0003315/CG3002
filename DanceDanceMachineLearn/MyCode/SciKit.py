@@ -4,9 +4,11 @@ import datetime
 import pandas
 import numpy
 from pandas.tools.plotting import scatter_matrix
+from scipy import stats
 import matplotlib.pyplot as plt
 from sklearn import model_selection
 from sklearn import preprocessing
+from sklearn.decomposition import PCA
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
@@ -21,11 +23,11 @@ from sklearn.svm import SVC
 # url = "https://www.kaggle.com/vmalyi/run-or-walk/downloads/dataset.csv"
 # url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"
 # names = ['sepal-length', 'sepal-width', 'petal-length', 'petal-width', 'class']
-url = "C:/Users/CheeYeo/Desktop/CG3002/Code/DanceDanceMachineLearn/MyCode/data2.csv" #CY's computer file path
-# url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/DanceDanceMachineLearn/MyCode/data2.csv" #Kelvin's computer file path
+# url = "C:/Users/CheeYeo/Desktop/CG3002/Code/DanceDanceMachineLearn/MyCode/data2.csv" #CY's computer file path
+url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/DanceDanceMachineLearn/MyCode/data2.csv" #Kelvin's computer file path
 names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
 dataset = pandas.read_csv(url, names=names)
-window_size = 80
+window_size = 100
 #shape
 # print(dataset.shape)
 #head
@@ -52,7 +54,7 @@ X = array[:,0:6]
 Y = array[:,6]
 
 # normalization
-normalised_data = preprocessing.normalize(X)
+# normalised_data = preprocessing.normalize(X)
 
 # label encode
 le = preprocessing.LabelEncoder()
@@ -70,10 +72,32 @@ segments_X = numpy.empty((K, window_size, dim_X))
 segments_Y = numpy.empty((K, window_size))
 for i in range(K):
     segment_X = X[i*window_size : (i*window_size ) + window_size , :]
+    segment_X = preprocessing.normalize(segment_X)
     segment_Y = Y_encoded[i*window_size : (i*window_size) + window_size]
     segments_X[i] = segment_X
     segments_Y[i] = segment_Y
 
+features = numpy.empty((K, 12))
+outputs = numpy.empty((K))
+pca = PCA()
+for i in range(K):
+    pca.fit(segments_X[i])
+    features[i, 0] = segments_X[i, : , 0].mean()
+    features[i, 1] = segments_X[i, : , 0].std()
+    features[i, 2] = segments_X[i, : , 1].mean()
+    features[i, 3] = segments_X[i, : , 1].std()
+    features[i, 4] = segments_X[i, : , 2].mean()
+    features[i, 5] = segments_X[i, : , 2].std()
+    features[i, 6] = segments_X[i, : , 3].mean()
+    features[i, 7] = segments_X[i, : , 3].std()
+    features[i, 8] = segments_X[i, : , 4].mean()
+    features[i, 9] = segments_X[i, : , 4].std()
+    features[i, 10] = segments_X[i, : , 5].mean()
+    features[i, 11] = segments_X[i, : , 5].std()
+    outputs[i] = stats.mode(segments_Y[i])[0]
+    
+# print(outputs)
+# print(segment_X.mean())
 print(datetime.datetime.now().time())
 # print (segment_X.shape)
 # print (segment_Y.shape)
@@ -83,8 +107,7 @@ print(datetime.datetime.now().time())
 # print(Y)
 validation_size = 0.20
 seed = 7
-X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, test_size=validation_size, random_state=seed)
-
+X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(features, outputs, test_size=validation_size, random_state=seed)
 # Test options and evaluation metric
 seed = 7
 scoring = 'accuracy'
