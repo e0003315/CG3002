@@ -36,7 +36,7 @@ le = preprocessing.LabelEncoder()
 le.fit(['sit', 'walk', 'stairsdown'])
 Y_encoded = le.transform(Y)
 
-print(datetime.datetime.now().time())
+# print(datetime.datetime.now().time())
 
 N = dataset.shape[0]
 dim_X = X.shape[1]
@@ -60,20 +60,13 @@ for i in range(K):
     outputs[i] = stats.mode(segments_Y[i])[0]
 
     
-# print(outputs)
-# print(segment_X.mean())
-print(datetime.datetime.now().time())
-# print (segment_X.shape)
-# print (segment_Y.shape)
+# print(datetime.datetime.now().time())
 
-# print(array)
-# print(X)
-# print(Y)
 validation_size = 0.20
 seed = 7
 X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(features, outputs, test_size=validation_size, random_state=seed)
+
 # Test options and evaluation metric
-seed = 7
 scoring = 'accuracy'
 
 # Spot Check Algorithms
