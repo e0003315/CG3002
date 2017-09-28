@@ -34,9 +34,7 @@ Y = array[:,6]
 # label encode
 le = preprocessing.LabelEncoder()
 le.fit(['sit', 'walk', 'stairsdown'])
-# print(list(le.classes_))
 Y_encoded = le.transform(Y)
-# print(Y_encoded)
 
 print(datetime.datetime.now().time())
 
