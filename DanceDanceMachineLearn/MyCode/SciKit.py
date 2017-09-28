@@ -79,9 +79,7 @@ for i in range(K):
 
 features = numpy.empty((K, 12))
 outputs = numpy.empty((K))
-pca = PCA()
 for i in range(K):
-    pca.fit(segments_X[i])
     features[i, 0] = segments_X[i, : , 0].mean()
     features[i, 1] = segments_X[i, : , 0].std()
     features[i, 2] = segments_X[i, : , 1].mean()
