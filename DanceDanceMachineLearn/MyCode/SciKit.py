@@ -20,8 +20,8 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 
 # Load dataset
-# url = "C:/Users/CheeYeo/Desktop/CG3002/Code/DanceDanceMachineLearn/MyCode/data2.csv" #CY's computer file path
-url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/DanceDanceMachineLearn/MyCode/data2.csv" #Kelvin's computer file path
+url = "C:/Users/CheeYeo/Desktop/CG3002/Code/DanceDanceMachineLearn/MyCode/data2.csv" #CY's computer file path
+# url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/DanceDanceMachineLearn/MyCode/data2.csv" #Kelvin's computer file path
 names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
 dataset = pandas.read_csv(url, names=names)
 window_size = 100
@@ -82,12 +82,13 @@ models.append(('KNN', KNeighborsClassifier(n_neighbors = 8)))
 results = []
 
 names = []
-    kfold = model_selection.KFold(n_splits=10, random_state=seed)
-    cv_results = model_selection.cross_val_score(model, X_train, Y_train, cv=kfold, scoring=scoring)
-    results.append(cv_results)
-    names.append(name)
-    msg = "%s: %f (%f)" % (name, cv_results.mean(), cv_results.std())
-    print(msg)
+for name, model in models:
+	kfold = model_selection.KFold(n_splits=10, random_state=seed)
+	cv_results = model_selection.cross_val_score(model, X_train, Y_train, cv=kfold, scoring=scoring)
+	results.append(cv_results)
+	names.append(name)
+	msg = "%s: %f (%f)" % (name, cv_results.mean(), cv_results.std())
+	print(msg)
  
 # Make predictions on validation dataset
 knn = KNeighborsClassifier()
