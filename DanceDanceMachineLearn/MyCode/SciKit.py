@@ -28,12 +28,8 @@ window_size = 100
 
 # Split-out validation dataset
 array = dataset.values
-# array = normalised_data.values
 X = array[:,0:6]
 Y = array[:,6]
-
-# normalization
-# normalised_data = preprocessing.normalize(X)
 
 # label encode
 le = preprocessing.LabelEncoder()
