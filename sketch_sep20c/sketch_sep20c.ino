@@ -9,11 +9,11 @@ MPU6050 accelgyro(0x68);
 #define CURRENT_PIN A0
 #define VOLTAGE_PIN A1
 
-char dataString[47] = {0};
+char data[50];
 int a = 0;
 int incomingByte = 0;
 int flag =0;
-String Data;
+String dataString = "";
 char ack;
 
 //Constants
@@ -117,16 +117,17 @@ void handshake(){
    }
 }
 
-/*void serialize (char *buffer){
+void serialize (){
   char checksum = 0;
-  buffer += (char)AcX + "," + (char)AcY + "," + (char)AcZ + "," + (char)Tmp + "," + char(GyX) + "," + (char)GyY + "," + (char)GyZ;
-  for (int i=1; i<= sizeof(dataString); i++){
-    checksum ^= buffer[i];
+  int i=0;
+  dataString += AcX + ",";// + AcY + "," + AcZ + "," + Tmp + "," + GyX + "," + GyY + "," + GyZ;
+  dataString.toCharArray(data, sizeof(dataString));
+  for (i=1; i<= sizeof(dataString); i++){
+    checksum ^= data[i];
   }
-  buffer [
-  buffer [size+1] = checksum;
+  data[50] = checksum;
 }
-*/
+
 void sendData(){
   TickType_t xLastWakeTime;
   const TickType_t xFrequency = 1000;
@@ -136,9 +137,9 @@ void sendData(){
   for( ;; ) {
     handshake();
     if (flag ==1){
-//      serialize(dataString);
-      for(int i=0; i<47; i++)
-        Serial2.write(dataString[i]);
+      serialize();
+//      for(int i=0; i<47; i++)
+        Serial2.write(data, sizeof(dataString));
       //send data to Rpi3
     }
     vTaskDelayUntil( &xLastWakeTime, xFrequency );
