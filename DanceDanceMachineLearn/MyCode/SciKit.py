@@ -25,24 +25,6 @@ url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/DanceDanceMachineLearn/My
 names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
 dataset = pandas.read_csv(url, names=names)
 window_size = 100
-#shape
-# print(dataset.shape)
-#head
-# print(dataset.head(20))
-#description
-# print(dataset.describe())
-#class distribution
-# print(dataset.groupby('activity').size())
-#box and whisker plots
-# dataset.plot(kind='box', subplots=True, layout =(2,4), sharex=False, sharey=False)
-# plt.show()
-#histogram
-# dataset.hist()
-# plt.show()
-
-#scatter plot matrix (multivariate plot)
-# scatter_matrix(dataset)
-# plt.show()
 
 # Split-out validation dataset
 array = dataset.values
