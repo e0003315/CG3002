@@ -1,23 +1,25 @@
 #include <Arduino_FreeRTOS.h>
+#include <semphr.h>
 #include "I2Cdev.h"
 #include "MPU6050.h"
 #include "Wire.h"
+#include <String.h>
 
 MPU6050 accelgyro(0x68);
+MPU6050 accelgyro2(0x69);
 #define sen1 6
 #define sen2 7
 #define CURRENT_PIN A0
 #define VOLTAGE_PIN A1
+#define STACK_SIZE 200
 
-char data[50];
-int a = 0;
-int incomingByte = 0;
-int flag =0;
-String dataString = "";
-char ack;
+//semaphores
+SemaphoreHandle_t processSemaphore = xSemaphoreCreateBinary();
+SemaphoreHandle_t sendSemaphore = xSemaphoreCreateBinary();
 
 //Constants
-const int MPU_addr=0x68;  // I2C address of the MPU-6050
+const int MPU1_addr=0x68;  // I2C address of the MPU-6050
+const int MPU2_addr=0x69;
 const float  RS = 0.1;
 const float RL = 10;
 const int VOLTAGE_REF = 5;
@@ -36,12 +38,27 @@ int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
 int16_t AcX2,AcY2,AcZ2,Tmp2,GyX2,GyY2,GyZ2;
 int counter = 0;
 int power_counter =0;
+int a = 0;
+int incomingByte = 0;
+int flag =0;
+char dataString[1000] = "";
+char data[1000] = "";
+char s[1000] = "";
+char ack;
 
 void readacc(int i){
-  Wire.beginTransmission(MPU_addr);
-  Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
-  Wire.endTransmission(false);
-  Wire.requestFrom(MPU_addr,14,true);  // request a total of 14 registers
+  if(i==1){
+    Wire.beginTransmission(MPU1_addr);
+    Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
+    Wire.endTransmission(false);
+    Wire.requestFrom(MPU1_addr,14,true);  // request a total of 14 registers
+  }
+  else if(i==2){
+    Wire.beginTransmission(MPU2_addr);
+    Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
+    Wire.endTransmission(false);
+    Wire.requestFrom(MPU2_addr,14,true);  // request a total of 14 registers
+  }
   if(i==1){
     AcX=Wire.read()<<8|Wire.read();  // 0x3B (ACCEL_XOUT_H) & 0x3C (ACCEL_XOUT_L)     
     AcY=Wire.read()<<8|Wire.read();  // 0x3D (ACCEL_YOUT_H) & 0x3E (ACCEL_YOUT_L)
@@ -62,20 +79,16 @@ void readacc(int i){
   }
 }
 
-void readData(){
+void readData(void *p){
   TickType_t xLastWakeTime;
-  const TickType_t xFrequency = 12.5;
+  const TickType_t xFrequency = 1;
+
+  
 
   // Initialize the xLastWakeTime variable with the current time.
   xLastWakeTime = xTaskGetTickCount();
   for( ;; ) {
-    
-    digitalWrite(sen1, LOW);
-    digitalWrite(sen2, HIGH);
     readacc(1);
-  
-    digitalWrite(sen1, HIGH);
-    digitalWrite(sen2, LOW);
     readacc(2);
     counter = counter+1;
 
@@ -84,14 +97,22 @@ void readData(){
       voltageSum += analogRead(VOLTAGE_PIN);
       currentSum += analogRead(CURRENT_PIN); 
     }
+    xSemaphoreGive(processSemaphore);
     vTaskDelayUntil( &xLastWakeTime, xFrequency );
   }
 }
 
-void processPowerWrapper(){
-  power_counter += 1;
-  if (power_counter==10)
-    processPower();
+void processPowerWrapper(void *p){
+  for (;;) {
+     power_counter += 1;
+     if (xSemaphoreTake (processSemaphore, 1) == pdTRUE) {
+        if (power_counter>=80){
+            processPower();
+            power_counter =  0;
+        }
+        xSemaphoreGive(sendSemaphore);
+     }
+  }
 }
 
 void processPower(){
@@ -106,6 +127,7 @@ void processPower(){
 }
 
 void handshake(){
+  while (flag !=1) {
   if(Serial2.available()){
       char received = Serial2.read();
       if(received == '0'){
@@ -115,34 +137,35 @@ void handshake(){
         flag = 1;
       }
    }
+  }
 }
 
 void serialize (){
   char checksum = 0;
   int i=0;
-  dataString += AcX + ",";// + AcY + "," + AcZ + "," + Tmp + "," + GyX + "," + GyY + "," + GyZ;
-  dataString.toCharArray(data, sizeof(dataString));
-  for (i=1; i<= sizeof(dataString); i++){
-    checksum ^= data[i];
-  }
-  data[50] = checksum;
+  int count=0;
+  //char dataSize[5];
+  sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", AcX, AcY, AcZ,GyX,GyY,GyZ,AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2);
+  sprintf(s, "%d", strlen(data));
+  Serial.println(strlen(data));
+  
+//  for (i=1; i<= sizeof(dataString); i++){
+//    checksum ^= data[i];
+//  }
+//  data[50] = checksum;
 }
 
-void sendData(){
-  TickType_t xLastWakeTime;
-  const TickType_t xFrequency = 1000;
-
-  // Initialize the xLastWakeTime variable with the current time.
-  xLastWakeTime = xTaskGetTickCount();
+void sendData(void *p){
+  int size;
   for( ;; ) {
-    handshake();
-    if (flag ==1){
-      serialize();
-//      for(int i=0; i<47; i++)
-        Serial2.write(data, sizeof(dataString));
-      //send data to Rpi3
+    if (xSemaphoreTake(sendSemaphore, 1) == pdTRUE ) {
+        serialize();
+        Serial2.write(data, strlen(data));
+        Serial2.write("d");
+        Serial2.write(s, strlen(s));
+        Serial2.write("s");
+        Serial.println(data);
     }
-    vTaskDelayUntil( &xLastWakeTime, xFrequency );
   }
 }
 
@@ -151,16 +174,18 @@ void setup() {
   Serial.begin(115200);
   Serial2.begin(115200);
 
-  Wire.begin();
-  Wire.beginTransmission(MPU_addr);
-  Wire.write(0x6B);  // PWR_MGMT_1 register
-  Wire.write(0);     // set to zero (wakes up the MPU-6050)
-  Wire.endTransmission(true);
   pinMode(sen1, OUTPUT);
   pinMode(sen2, OUTPUT);
 
   digitalWrite(sen1, HIGH);
   digitalWrite(sen2, LOW);
+
+  Wire.begin();
+  Wire.beginTransmission(MPU1_addr);
+  Wire.write(0x6B);  // PWR_MGMT_1 register
+  Wire.write(0);     // set to zero (wakes up the MPU-6050)
+  Wire.endTransmission(true);
+  
   accelgyro.initialize();
   accelgyro.setXAccelOffset(-5407);
   accelgyro.setYAccelOffset(-111);
@@ -169,25 +194,27 @@ void setup() {
   accelgyro.setYGyroOffset(-9);
   accelgyro.setZGyroOffset(-97);
 
-  digitalWrite(sen1, LOW);
-  digitalWrite(sen2, HIGH);
-  accelgyro.initialize();
-  accelgyro.setXAccelOffset(-1417);
-  accelgyro.setYAccelOffset(3542);
-  accelgyro.setZAccelOffset(1089);
-  accelgyro.setXGyroOffset(61);
-  accelgyro.setYGyroOffset(-8);
-  accelgyro.setZGyroOffset(26);
-  
+  Wire.begin();
+  Wire.beginTransmission(MPU2_addr);
+  Wire.write(0x6B);  // PWR_MGMT_1 register
+  Wire.write(0);     // set to zero (wakes up the MPU-6050)
+  Wire.endTransmission(true);
+
+  accelgyro2.initialize();
+  accelgyro2.setXAccelOffset(-1417);
+  accelgyro2.setYAccelOffset(3542);
+  accelgyro2.setZAccelOffset(1089);
+  accelgyro2.setXGyroOffset(61);
+  accelgyro2.setYGyroOffset(-8);
+  accelgyro2.setZGyroOffset(26);
+
+  handshake();
+  if (flag ==1){
+  xTaskCreate(readData,"readData", STACK_SIZE, NULL, 3,NULL);
+  xTaskCreate(processPowerWrapper, "processPowerWrapper", STACK_SIZE, NULL, 2,NULL);
+  xTaskCreate(sendData, "sendData", STACK_SIZE, NULL, 1,NULL);
+}
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  int count = 0;
-  int i=0;
-  for (i=0; i<10; i++){
-    readData();
-    processPowerWrapper();
-    sendData();
-  }
 }

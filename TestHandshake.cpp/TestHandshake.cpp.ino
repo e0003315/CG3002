@@ -20,7 +20,7 @@ void loop() {
   // put your main code here, to run repeatedly:
   if(flag == 1){
    // a++;
-    //Serial.println(dataString);
+    Serial.println(dataString);
     //sprintf(dataString, "%02X", a); // convert a value to hexa
    // dataString.toCharArray(data, sizeof(dataString));
     Serial2.println(dataString);   // send the data
