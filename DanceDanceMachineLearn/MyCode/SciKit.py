@@ -25,7 +25,7 @@ url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Test case/FiveMoves.csv" 
 # names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
 # dataset = pandas.read_csv(url, names=names)
 dataset = pandas.read_csv(url)
-window_size = 100
+window_size = 80
 
 # Split-out validation dataset
 array = dataset.values
@@ -100,9 +100,21 @@ print(confusion_matrix(Y_validation, predictions))
 print(classification_report(Y_validation, predictions))
 
 a = input()
+# rawData = numpy.empty(80, 12)
+# featureData = numpy.empty(24)
 while (a != "0"):
+#     counter = 0
+#     while (counter < 80):
     my_list = a.split()
     matrix = [my_list]
+#         rawData[counter] = matrix
+#         counter = counter + 1
     predictions = knn.predict(matrix)
+    
+#     for j in range(0, featureData.shape[1] - 1, 2):
+#         featureData[j] = rawData[: , j//2].mean()
+#         featureData[j+1] = rawData[: , j//2].std()
+
+#     predictions = knn.predict(featureData)
     print(predictions)
     a = input()
