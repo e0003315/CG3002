@@ -3,6 +3,7 @@ from six.moves import input
 import datetime
 import pandas
 import numpy
+from numpy import mean, absolute
 from pandas.tools.plotting import scatter_matrix
 from scipy import stats
 import matplotlib.pyplot as plt
@@ -19,6 +20,8 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 
+def mad(data, axis=None):
+    return mean(absolute(data-mean(data,axis)), axis)
 # Load dataset
 # url = "C:/Users/CheeYeo/Desktop/CG3002/Code/DanceDanceMachineLearn/MyCode/data2.csv" #CY's computer file path
 url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Test case/TenMoves.csv"  # Kelvin's computer file path
@@ -51,13 +54,14 @@ for i in range(K):
     segments_X[i] = segment_X
     segments_Y[i] = segment_Y
 
-features = numpy.empty((K, 24))
+features = numpy.empty((K, 36))
 outputs = numpy.empty((K))
 
 for i in range(K):
-    for j in range(0, features.shape[1] - 1, 2):
-        features[i, j] = segments_X[i, : , j // 2].mean()
-        features[i, j + 1] = segments_X[i, : , j // 2].std()
+    for j in range(0, features.shape[1] - 1, 3):
+        features[i, j] = segments_X[i, : , j // 3].mean()
+        features[i, j + 1] = segments_X[i, : , j // 3].std()
+        features[i, j + 2] = mad(segments_X[i, : , j // 3])
     outputs[i] = stats.mode(segments_Y[i])[0]
 
     
