@@ -24,7 +24,7 @@ def mad(data, axis=None):
     return mean(absolute(data-mean(data,axis)), axis)
 # Load dataset
 # url = "C:/Users/CheeYeo/Desktop/CG3002/Code/Test case/TenMoves.csv" #CY's computer file path
-url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Test case/TenMoves.csv"  # Kelvin's computer file path
+url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Test case/CompiledMoves.csv"  # Kelvin's computer file path
 # names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
 # dataset = pandas.read_csv(url, names=names)
 dataset = pandas.read_csv(url)
@@ -68,7 +68,7 @@ for i in range(K):
 # print(datetime.datetime.now().time())
 
 validation_size = 0.20
-seed = 9
+seed = 8
 X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(features, outputs, test_size=validation_size, random_state=seed)
 
 # Test options and evaluation metric
