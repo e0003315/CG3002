@@ -68,7 +68,7 @@ for i in range(K):
 # print(datetime.datetime.now().time())
 
 validation_size = 0.20
-seed = 7
+seed = 9
 X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(features, outputs, test_size=validation_size, random_state=seed)
 
 # Test options and evaluation metric
@@ -78,7 +78,7 @@ scoring = 'accuracy'
 models = []
 # models.append(('LR', LogisticRegression()))
 # models.append(('LDA', LinearDiscriminantAnalysis()))
-models.append(('KNN', KNeighborsClassifier(n_neighbors=8)))
+models.append(('KNN', KNeighborsClassifier(n_neighbors=3)))
 # models.append(('CART', DecisionTreeClassifier()))
 # models.append(('NB', GaussianNB()))
 # models.append(('SVM', SVC()))
@@ -96,7 +96,7 @@ for name, model in models:
 	print(msg)
  
 # Make predictions on validation dataset
-knn = KNeighborsClassifier()
+knn = KNeighborsClassifier(n_neighbors=3)
 knn.fit(X_train, Y_train)
 predictions = knn.predict(X_validation)
 print(accuracy_score(Y_validation, predictions))
