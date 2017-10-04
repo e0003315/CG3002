@@ -19,6 +19,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
+from cProfile import label
 
 def mad(data, axis=None):
     return mean(absolute(data-mean(data,axis)), axis)
@@ -101,7 +102,7 @@ knn.fit(X_train, Y_train)
 predictions = knn.predict(X_validation)
 print("Accuracy Score: ", accuracy_score(Y_validation, predictions))
 print("")
-print("Confusion Matrix: \n", confusion_matrix(Y_validation, predictions))
+print("Confusion Matrix: \n", confusion_matrix(Y_validation, predictions, labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))
 print("")
 print("Classification Report: \n", classification_report(Y_validation, predictions))
 
