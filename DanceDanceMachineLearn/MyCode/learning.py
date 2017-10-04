@@ -23,8 +23,8 @@ from sklearn.svm import SVC
 def mad(data, axis=None):
     return mean(absolute(data-mean(data,axis)), axis)
 # Load dataset
-url = "C:/Users/CheeYeo/Desktop/CG3002/Code/Test case/TenMoves.csv" #CY's computer file path
-#url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Test case/TenMoves.csv"  # Kelvin's computer file path
+# url = "C:/Users/CheeYeo/Desktop/CG3002/Code/Test case/TenMoves.csv" #CY's computer file path
+url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Test case/TenMoves.csv"  # Kelvin's computer file path
 # names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
 # dataset = pandas.read_csv(url, names=names)
 dataset = pandas.read_csv(url)
