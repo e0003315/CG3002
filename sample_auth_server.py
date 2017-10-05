@@ -6,6 +6,7 @@ import time
 import threading
 import os
 import pandas as pd
+import hashlib
 
 class server:
     def __init__(self, ip_addr, port_num):
@@ -40,7 +41,8 @@ class server:
             # Wait for a connection
             print('waiting for a connection', file=sys.stderr)
             connection, client_address = self.sock.accept()
-            self.secret_key = input("Enter the secret key: ")
+            key = input("Enter the secret key: ")
+            self.secret_key = hashlib.sha256(key.encode()).digest()
 
             print('connection from', client_address, file=sys.stderr)
 
@@ -56,8 +58,7 @@ class server:
                 print('received')
                 if data:
                         try:
-                            msg = data.decode()
-                            #decodedmsg = data
+                            msg = data
                             print('%s' %msg)
                             decodedmsg = self.auth.decryptText(msg,self.secret_key)
                             if decodedmsg['action'] == "logout  ":
@@ -66,7 +67,7 @@ class server:
                                 pass
                             print('before log move')
                             self.logMoveMade(decodedmsg['action'], decodedmsg['voltage'],decodedmsg['current'],decodedmsg['power'],decodedmsg['cumpower'])
-                            print("{} :: {} :: {} :: {} :: {}".format(decodedmsg['action'], decodedmsg['voltage'],decodedmsg['current'],decodedmsg['power'],decodedmsg['cumpower']))
+                            print("{} :: {} :: {} :: {} :: {}".format(decodedmsg['action'].strip(), decodedmsg['voltage'].strip(),decodedmsg['current'].strip(),decodedmsg['power'].strip(),decodedmsg['cumpower'].strip()))
                                 
                         except Exception as e:
                             print(e)
