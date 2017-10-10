@@ -25,11 +25,12 @@ def mad(data, axis=None):
     return mean(absolute(data-mean(data,axis)), axis)
 # Load dataset
 # url = "C:/Users/CheeYeo/Desktop/CG3002/Code/Test case/TenMoves.csv" #CY's computer file path
-url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Test case/CompiledMoves.csv"  # Kelvin's computer file path
+url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Test case/TenMoves.csv"  # Kelvin's computer file path
 # names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
 # dataset = pandas.read_csv(url, names=names)
 dataset = pandas.read_csv(url)
 window_size = 80
+shift_size = 40
 
 # Split-out validation dataset
 array = dataset.values
@@ -45,13 +46,13 @@ Y_encoded = le.transform(Y)
 
 N = dataset.shape[0]
 dim_X = X.shape[1]
-K = N // window_size
+K = (N // shift_size) - 1
 segments_X = numpy.empty((K, window_size, dim_X))
 segments_Y = numpy.empty((K, window_size))
 for i in range(K):
-    segment_X = X[i * window_size : (i * window_size) + window_size , :]
+    segment_X = X[i * shift_size : (i * shift_size) + window_size , :]
     segment_X = preprocessing.normalize(segment_X)
-    segment_Y = Y_encoded[i * window_size : (i * window_size) + window_size]
+    segment_Y = Y_encoded[i * shift_size : (i * shift_size) + window_size]
     segments_X[i] = segment_X
     segments_Y[i] = segment_Y
 
@@ -69,7 +70,7 @@ for i in range(K):
 # print(datetime.datetime.now().time())
 
 validation_size = 0.20
-seed = 8
+seed = 7
 X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(features, outputs, test_size=validation_size, random_state=seed)
 
 # Test options and evaluation metric
