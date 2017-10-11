@@ -1,88 +1,93 @@
- // MPU-6050 Short Example Sketch
-// By Arduino User JohnChi
-// August 17, 2014
-// Public Domain
+#include "Wire.h"
 #include "I2Cdev.h"
 #include "MPU6050.h"
-#include "Wire.h"
 
-MPU6050 accelgyro(0x68);
-#define sen1 6
-#define sen2 7
 #define CURRENT_PIN A0
 #define VOLTAGE_PIN A1
+MPU6050 accelgyro1(0x68);
+MPU6050 accelgyro2(0x69);
 
-//Constants
-const int MPU_addr=0x68;  // I2C address of the MPU-6050
+char data[1000] = "";
+const int MPU_addr1=0x68;  // I2C address of the MPU-6050
+const int MPU_addr2=0x69;
+int16_t AcX1,AcY1,AcZ1,Tmp,GyX1,GyY1,GyZ1;
+int16_t AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2;
+int toggle = 10;
 const float  RS = 0.1;
 const float RL = 10;
 const int VOLTAGE_REF = 5;
 const int NUM_SAMPLES = 10;
-const float potRatio = 2;
-
-// Global Variables
+const float POTRATIO = 2;
 float current = 0;
 float voltage = 0;
 float power = 0;
 float cumPower = 0;
 int sample_count = 0;
 
-int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
+
 void setup(){
+  pinMode(7,OUTPUT);
+  digitalWrite(7,HIGH);
+  
+  Serial.begin(115200);
   Wire.begin();
-  Wire.beginTransmission(MPU_addr);
+  Wire.beginTransmission(MPU_addr1);
   Wire.write(0x6B);  // PWR_MGMT_1 register
   Wire.write(0);     // set to zero (wakes up the MPU-6050)
   Wire.endTransmission(true);
-  pinMode(sen1, OUTPUT);
-  pinMode(sen2, OUTPUT);
-  Serial.begin(115200);
+ 
+  accelgyro1.initialize();
+  accelgyro1.setXAccelOffset(-5407);
+  accelgyro1.setYAccelOffset(-111);
+  accelgyro1.setZAccelOffset(1246);
+  accelgyro1.setXGyroOffset(99);
+  accelgyro1.setYGyroOffset(-9);
+  accelgyro1.setZGyroOffset(-97);
+  
+  Wire.begin();
+  Wire.beginTransmission(MPU_addr2);
+  Wire.write(0x6B);  // PWR_MGMT_1 register
+  Wire.write(0);     // set to zero (wakes up the MPU-6050)
+  Wire.endTransmission(true);
 
-  digitalWrite(sen1, HIGH);
-  digitalWrite(sen2, LOW);
-  accelgyro.initialize();
-  accelgyro.setXAccelOffset(-5407);
-  accelgyro.setYAccelOffset(-111);
-  accelgyro.setZAccelOffset(1246);
-  accelgyro.setXGyroOffset(99);
-  accelgyro.setYGyroOffset(-9);
-  accelgyro.setZGyroOffset(-97);
+  
+  accelgyro2.initialize();
+  accelgyro2.setXAccelOffset(-1377);
+  accelgyro2.setYAccelOffset(3532);
+  accelgyro2.setZAccelOffset(1092);
+  accelgyro2.setXGyroOffset(54);
+  accelgyro2.setYGyroOffset(9);
+  accelgyro2.setZGyroOffset(16);
 
-  digitalWrite(sen1, LOW);
-  digitalWrite(sen2, HIGH);
-  accelgyro.initialize();
-  accelgyro.setXAccelOffset(-1417);
-  accelgyro.setYAccelOffset(3542);
-  accelgyro.setZAccelOffset(1089);
-  accelgyro.setXGyroOffset(61);
-  accelgyro.setYGyroOffset(-8);
-  accelgyro.setZGyroOffset(26);
 }
-
-void readacc(){
-  Wire.beginTransmission(MPU_addr);
+void loop(){
+  Wire.beginTransmission(MPU_addr1);
   Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
   Wire.endTransmission(false);
-  Wire.requestFrom(MPU_addr,14,true);  // request a total of 14 registers
-  AcX=Wire.read()<<8|Wire.read();  // 0x3B (ACCEL_XOUT_H) & 0x3C (ACCEL_XOUT_L)     
-  AcY=Wire.read()<<8|Wire.read();  // 0x3D (ACCEL_YOUT_H) & 0x3E (ACCEL_YOUT_L)
-  AcZ=Wire.read()<<8|Wire.read();  // 0x3F (ACCEL_ZOUT_H) & 0x40 (ACCEL_ZOUT_L)
-  Tmp=Wire.read()<<8|Wire.read();  // 0x41 (TEMP_OUT_H) & 0x42 (TEMP_OUT_L)
-  GyX=Wire.read()<<8|Wire.read();  // 0x43 (GYRO_XOUT_H) & 0x44 (GYRO_XOUT_L)
-  GyY=Wire.read()<<8|Wire.read();  // 0x45 (GYRO_YOUT_H) & 0x46 (GYRO_YOUT_L)
-  GyZ=Wire.read()<<8|Wire.read();  // 0x47 (GYRO_ZOUT_H) & 0x48 (GYRO_ZOUT_L)
+  Wire.requestFrom(MPU_addr1,14,true);  // request a total of 14 registers
+  accelgyro1.getMotion6(&AcX1,&AcY1,&AcZ1,&GyX1,&GyY1,&GyZ1);
 
-}
+  
+  Wire.beginTransmission(MPU_addr2);
+  Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
+  Wire.endTransmission(false);
+  Wire.requestFrom(MPU_addr2,14,true);  // request a total of 14 registers
+  accelgyro2.getMotion6(&AcX2,&AcY2,&AcZ2,&GyX2,&GyY2,&GyZ2);
 
-void printacc(int i){
-  Serial.print("AcX"); Serial.print(i); Serial.print(" = "); Serial.print(AcX);
-  Serial.print(" | AcY"); Serial.print(i); Serial.print(" = "); Serial.print(AcY);
-  Serial.print(" | AcZ"); Serial.print(i); Serial.print(" = "); Serial.print(AcZ);
-  Serial.print(" | GyX"); Serial.print(i); Serial.print(" = "); Serial.print(GyX);
-  Serial.print(" | GyY"); Serial.print(i); Serial.print(" = "); Serial.print(GyY);
-  Serial.print(" | GyZ"); Serial.print(i); Serial.print(" = "); Serial.println(GyZ);
-  if(i==2)
-    Serial.println(); 
+  printPowerConsumption();
+  //acceleration in g, gyro in angular velocity
+//  sprintf(data, "%.3lf,%.3lf,%.3lf,%.3lf,%.3lf,%.3lf,%.3lf,%.3lf,%.3lf,%.3lf,%.3lf,%.3lf,%d", 
+//  AcX1/16384.0, AcY1/16384.0, AcZ1/16384.0,GyX1/131.0,GyY1/131.0,GyZ1/131.0,AcX2/16384.0,AcY2/16384.0,AcZ2/16384.0,GyX2/131.0,GyY2/131.0,GyZ2/131.0,toggle);
+//  Serial.println(data);
+  Serial.print("Sensor 1: ");
+  printDouble(AcX1/16384.0,3);Serial.print("g, ");printDouble(AcY1/16384.0,3);Serial.print("g, ");printDouble(AcZ1/16384.0,3);Serial.print("g, ");printDouble(GyX1/131.0,3);Serial.print("Degree/s, ");
+  printDouble(GyY1/131.0,3);Serial.print("Degree/s, ");printDouble(GyZ1/131.0,3);Serial.println("Degree/s, ");
+  Serial.print("Sensor 2: ");
+  printDouble(AcX2/16384.0,3);Serial.print("g, ");printDouble(AcY2/16384.0,3);Serial.print("g, ");
+  printDouble(AcZ2/16384.0,3);Serial.print("g, ");printDouble(GyX2/131.0,3);Serial.print("Degree/s, ");printDouble(GyY2/131.0,3);Serial.print("Degree/s, ");printDouble(GyZ2/131.0,3);
+  Serial.println("Degree/s, ");
+//
+// Serial.println();
 }
 
 void printPowerConsumption() {
@@ -93,7 +98,7 @@ void printPowerConsumption() {
     delay(100);
   }
     voltage = (voltage / (float)NUM_SAMPLES * VOLTAGE_REF) / 1023.0;
-  voltage = voltage * potRatio;
+  voltage = voltage * POTRATIO;
   current = (current / (float)NUM_SAMPLES * VOLTAGE_REF) / 1023.0;
   current = current / (RS*RL);
   // Follow the equation given by the INA169 datasheet to
@@ -118,16 +123,30 @@ void printPowerConsumption() {
   current = 0;
 }
 
-void loop(){
-  digitalWrite(sen1, LOW);
-  digitalWrite(sen2, HIGH);
-  readacc();
-  printacc(1);
-  
-  digitalWrite(sen1, HIGH);
-  digitalWrite(sen2, LOW);
-  readacc();
-  printacc(2);
-  
-  printPowerConsumption(); 
+void printDouble( double val, byte precision){
+ // prints val with number of decimal places determine by precision
+ // precision is a number from 0 to 6 indicating the desired decimial places
+ // example: printDouble( 3.1415, 2); // prints 3.14 (two decimal places)
+
+ Serial.print (int(val));  //prints the int part
+ if( precision > 0) {
+   Serial.print("."); // print the decimal point
+   unsigned long frac;
+   unsigned long mult = 1;
+   byte padding = precision -1;
+   while(precision--)
+      mult *=10;
+      
+   if(val >= 0)
+     frac = (val - int(val)) * mult;
+   else
+     frac = (int(val)- val ) * mult;
+   unsigned long frac1 = frac;
+   while( frac1 /= 10 )
+     padding--;
+   while(  padding--)
+     Serial.print("0");
+   Serial.print(frac,DEC) ;
+ }
 }
+
