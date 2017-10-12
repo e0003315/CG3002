@@ -5,6 +5,7 @@ ser = serial.Serial('/dev/ttyAMA0', 115200)
 
 class serial_communication:
     def __init__(self):
+        counter = 0
         ready = self.handshake()
         while ready == False:
             print('no handshake')
@@ -16,6 +17,7 @@ class serial_communication:
             if (data == '0'):
                 print(rcv)
                 los = len(rcv)
+                cs = self.checksum()
             if (data == '1'):
                 print(rcv)
                 if(los == int(rcv)):
@@ -24,10 +26,11 @@ class serial_communication:
                     print ('size is wrong')
                 los = ""
             if (data == '2'):
-                print('checksum is {}'.format(rcv))
+                if(cs == int(rcv)):
+                    print('checksum is correct')
+                else:
+                    print('checksum is wrong')
                 
-                
-   
     def handshake(self):
         ser.write('0'.encode())
         ack1 = ser.read().decode('ascii')
@@ -40,17 +43,27 @@ class serial_communication:
             return False
         
 
+    def checksum(self):
+        ch = "0"
+        global rcv
+        for i in range (0, len(rcv)):
+            ch = chr(ord(ch) ^ ord(rcv[i]))
+        print ch 
+        return ch
+
+
+
     def readlineCR(self):
         global rcv
         rcv = ""
         checksum = 0
         while True:
             ch = ser.read().decode('ascii')
-            if(ch == 'd'):
+            if(ch == 'd' and len(rcv)!=0):
                 return '0'
-            if(ch == 's'):
+            if(ch == 's' and len(rcv)!=0):
                 return '1'
-            if (ch == 'c'):
+            if (ch == 'c' and len(rcv)!=0):
                 return '2'
             rcv += ch
             
