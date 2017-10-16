@@ -21,8 +21,6 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from cProfile import label
 
-run = learning()
-run.machineTrain()
 class learning:
     def _init_(self):
         super(learning, self)._init_()
@@ -37,7 +35,7 @@ class learning:
             features[j] = segment_X[ : , j // 3].mean()
             features[j + 1] = segment_X[ : , j // 3].std()
             features[j + 2] = self.mad(segment_X[ : , j // 3])
-        return model.predict(features)
+        return model.predict([features])
     def machineTrain(self):
         # Load dataset
         # url = "C:/Users/CheeYeo/Desktop/CG3002/Code/Test case/TenMoves.csv" #CY's computer file path
@@ -81,7 +79,7 @@ class learning:
             for j in range(0, features.shape[1] - 1, 3):
                 features[i, j] = segments_X[i, : , j // 3].mean()
                 features[i, j + 1] = segments_X[i, : , j // 3].std()
-                features[i, j + 2] = mad(data = segments_X[i, : , j // 3])
+                features[i, j + 2] = self.mad(data = segments_X[i, : , j // 3])
             outputs[i] = stats.mode(segments_Y[i])[0]
         
             
@@ -126,7 +124,7 @@ class learning:
         print("Classification Report: \n", classification_report(Y_validation, predictions), file=open('summary.txt', 'a'))
         
         print("TEST\n")
-        print(processData(segment_X, knn))
+        print(self.processData(segment_X, knn))
         print(stats.mode(segment_Y)[0])
         a = input()
         # rawData = numpy.empty(80, 12)
@@ -147,3 +145,6 @@ class learning:
         #     predictions = knn.predict(featureData)
             print(predictions)
             a = input()
+
+run = learning()
+run.machineTrain()
