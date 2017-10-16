@@ -22,7 +22,7 @@ from sklearn.svm import SVC
 from cProfile import label
 
 class learning:
-    def __init__(self):
+    def _init_(self):
         super(learning, self)._init_()
         
     def mad(self, data, axis=None):
@@ -35,11 +35,16 @@ class learning:
             features[j] = segment_X[ : , j // 3].mean()
             features[j + 1] = segment_X[ : , j // 3].std()
             features[j + 2] = self.mad(segment_X[ : , j // 3])
-        return model.predict([features])
+#         return le.inverse_transform([3])
+#         print (model.predict([features]))
+#         return(model.predict([features]))
+        string = (model.predict([features]))
+        return le.inverse_transform([int(string[0])])
+#         return le.inverse_transform(model.predict([features]))
     def machineTrain(self):
         # Load dataset
         # url = "C:/Users/CheeYeo/Desktop/CG3002/Code/Test case/TenMoves.csv" #CY's computer file path
-        url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Test case/TenMoves.csv"  # Kelvin's computer file path
+        url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Test case/CompiledMoves.csv"  # Kelvin's computer file path
         # url = "/home/pi/Desktop/CompiledMoves.csv"
         # names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
         # dataset = pandas.read_csv(url, names=names)
@@ -54,6 +59,7 @@ class learning:
         Y = array[:, 12]
         
         # label encode
+        global le 
         le = preprocessing.LabelEncoder()
         le.fit(['NoMove', 'WaveHand', 'BusDrive', 'FrontBack', 'SideStep', 'Jumping', 'jumpingJack', 'turnClap', 'squatTurnClap', 'window', 'window360'])
         Y_encoded = le.transform(Y)
@@ -123,9 +129,9 @@ class learning:
         print("")
         print("Classification Report: \n", classification_report(Y_validation, predictions), file=open('summary.txt', 'a'))
         
-        print("TEST\n")
-        print(self.processData(segment_X, knn))
-        print(stats.mode(segment_Y)[0])
+#         print("TEST\n")
+#         print(self.processData(segment_X, knn))
+#         print(stats.mode(segment_Y)[0])
         
         return knn
 #         a = input()
