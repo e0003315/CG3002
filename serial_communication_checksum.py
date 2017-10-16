@@ -40,7 +40,7 @@ class serial_communication:
             return True
         else:
             print("\r\n\Handshake not completed!")
-            return True
+            return False
         
 
     def checksum(self):
