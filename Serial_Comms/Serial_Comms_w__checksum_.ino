@@ -139,12 +139,14 @@ void handshake(){
 
 void serialize (){
   int i=0;
-  checksum = 0;
+  checksum = '0';
   int count=0;
+  //int16_t te stvar = 0;
   //char dataSize[5];
   sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", AcX, AcY, AcZ,GyX,GyY,GyZ,AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2);
+  //sprintf(data, "%d", testvar);
   sprintf(s, "%d", strlen(data));
-  Serial.println(strlen(data));
+  //Serial.println(strlen(data));
 
   char *p = data;
   while(*p != '\0'){
@@ -168,7 +170,23 @@ void sendData(void *p){
         Serial2.write("s");
         Serial2.write(checksum);
         Serial2.write("c");
-        Serial.println(data);
+//        Serial.print("data is");
+//        Serial.println(data);
+//        Serial.print("checksum is");
+//        Serial.println(checksum);
+        if(Serial2.available()){
+          char received = Serial2.read();
+          if(received ==  '2'){
+            //Got error so have to resend
+            serialize();
+            Serial2.write(data, strlen(data));
+            Serial2.write("d");
+            Serial2.write(s, strlen(s));
+            Serial2.write("s");
+            Serial2.write(checksum);
+            Serial2.write("c");
+          }
+        }
     }
   }
 }
@@ -190,7 +208,7 @@ void setup() {
   Wire.write(0);     // set to zero (wakes up the MPU-6050)
   Wire.endTransmission(true);
   
-  accelgyro.initialize();
+  //accelgyro.initialize();
   accelgyro.setXAccelOffset(-5407);
   accelgyro.setYAccelOffset(-111);
   accelgyro.setZAccelOffset(1246);
@@ -222,3 +240,5 @@ void setup() {
 
 void loop() {
 }
+
+
