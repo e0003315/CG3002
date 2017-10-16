@@ -126,25 +126,25 @@ class learning:
         print("TEST\n")
         print(self.processData(segment_X, knn))
         print(stats.mode(segment_Y)[0])
-        a = input()
-        # rawData = numpy.empty(80, 12)
-        # featureData = numpy.empty(24)
-        while (a != "0"):
-        #     counter = 0
-        #     while (counter < 80):
-            my_list = a.split()
-            matrix = [my_list]
-        #         rawData[counter] = matrix
-        #         counter = counter + 1
-            predictions = knn.predict(matrix)
-            
-        #     for j in range(0, featureData.shape[1] - 1, 2):
-        #         featureData[j] = rawData[: , j//2].mean()
-        #         featureData[j+1] = rawData[: , j//2].std()
-        
-        #     predictions = knn.predict(featureData)
-            print(predictions)
-            a = input()
+#         a = input()
+#         # rawData = numpy.empty(80, 12)
+#         # featureData = numpy.empty(24)
+#         while (a != "0"):
+#         #     counter = 0
+#         #     while (counter < 80):
+#             my_list = a.split()
+#             matrix = [my_list]
+#         #         rawData[counter] = matrix
+#         #         counter = counter + 1
+#             predictions = knn.predict(matrix)
+#             
+#         #     for j in range(0, featureData.shape[1] - 1, 2):
+#         #         featureData[j] = rawData[: , j//2].mean()
+#         #         featureData[j+1] = rawData[: , j//2].std()
+#         
+#         #     predictions = knn.predict(featureData)
+#             print(predictions)
+#             a = input()
 
 run = learning()
 run.machineTrain()
