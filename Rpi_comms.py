@@ -16,20 +16,26 @@ class Rpi_comms:
         model = self.Ml.machineTrain()
         data = numpy.empty((80, 12))
         count = 0
+        switch = 0
        
         #receivedData = self.Scomms.receiveData();
         while True:
             try:
 #                 receivedData = 'wavehands|7|7|7|7|'
                 receivedData = [-15752,-1840,6484,571,1790,-97,-17156,-408,3104,4318,-1108,-2198]
+                receivedData2 = [-19108,-6584,9528,618,-2725,109,-21276,5772,2800,90,-2643,-3755]
 
 #                 print(receivedData)
-                data[count] = receivedData
+                if switch == 1 :
+                    data[count] = receivedData2
+                else:
+                    data[count] = receivedData2
                 count = count + 1
                 if (count == 80) :
                     move = self.Ml.processData(data, model)
                     print(move)
                     count = 0
+                    switch = (switch + 1) % 2
 #                 self.Wcomms.sendData(receivedData)
             except Exception as e:
                 print(e)
