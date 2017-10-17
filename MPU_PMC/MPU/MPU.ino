@@ -18,6 +18,7 @@ float avgVoltage = 5;
 float power = 0;
 float cumPower = 0;
 int sample_count = 0;
+char buffer [1000];
 
 //IMU Data
 MPU6050 accelgyro1(0x68);
@@ -145,7 +146,7 @@ void loop() {
   kalmanFilter();
   //OLD CODE
 
-  // printPowerConsumption();
+     
 //  acceleration in g, gyro in angular velocity
 //    sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
 //    AcX1, AcY1, AcZ1,kalAngleX1,kalAngleY1,kalAngleZ1,AcX2,AcY2,AcZ2,kalAngleX2,kalAngleY2,kalAngleZ2);
@@ -154,6 +155,11 @@ void loop() {
     count = count + 1;
 
     if(count == 100) {
+    printPowerConsumption();
+    Serial.print(AcX1/16384.0); Serial.print("\t"); Serial.print(AcY1/16384.0); Serial.print("\t"); Serial.print(AcZ1/16384.0); Serial.println("\t");
+    convertToString(AcX1 / 16384.0, AcY1/ 16384.0, AcZ1/ 16384.0, kalAngleX1, kalAngleY1, kalAngleZ1, AcX2/ 16384.0, AcY2/ 16384.0, AcZ2/ 16384.0, kalAngleX2, kalAngleY2, kalAngleZ2, current, voltage, buffer);
+    Serial.println (buffer);
+    memset(buffer, 0, 50);
     Serial.print("Sensor 1: ");
     printDouble(AcX1 / 16384.0, 3); Serial.print("g, "); printDouble(AcY1 / 16384.0, 3); Serial.print("g, "); printDouble(AcZ1 / 16384.0, 3); Serial.print("g, "); printDouble(kalAngleX1,2); Serial.print("Degree/s, ");
     printDouble(kalAngleY1,2); Serial.print("Degree/s, "); printDouble(kalAngleZ1,2); Serial.println("Degree/s, ");
@@ -161,13 +167,14 @@ void loop() {
     printDouble(AcX2 / 16384.0, 3); Serial.print("g, "); printDouble(AcY2 / 16384.0, 3); Serial.print("g, ");
     printDouble(AcZ2 / 16384.0, 3); Serial.print("g, "); printDouble(kalAngleX2,2); Serial.print("Degree/s, "); printDouble(kalAngleY2,2); Serial.print("Degree/s, "); printDouble(kalAngleZ2,2);
     Serial.println("Degree/s, ");
+    Serial.println("");
     count = 0;
     }
 
-//  Serial.print("K: ");
-//  Serial.print(kalAngleX1); Serial.print("\t"); Serial.print(kalAngleY1); Serial.print("\t"); Serial.print(kalAngleZ1); Serial.print("\t");
-//
-//  Serial.print(kalAngleX2); Serial.print("\t"); Serial.print(kalAngleY2); Serial.print("\t"); Serial.print(kalAngleZ2); Serial.print("\t"); Serial.println(); Serial.println();
+  //Serial.print("K: ");
+ // Serial.print(AcX1/16384.0); Serial.print("\t"); Serial.print(AcY1/16384.0); Serial.print("\t"); Serial.print(AcZ1/16384.0); Serial.print("\t");
+
+  //Serial.print(kalAngleX2); Serial.print("\t"); Serial.print(kalAngleY2); Serial.print("\t"); Serial.print(kalAngleZ2); Serial.print("\t"); Serial.println(); Serial.println();
 
 }
 
@@ -432,3 +439,48 @@ void kalmanFilter() {
     kalAngleZ2 = kalmanZ2.getAngle(yaw2, gyroZrate2, dt); // Calculate the angle using a Kalman filter
 }
 
+void convertToString(double a, double b, double c, double d, double e, double f, double g, double h, double i, double j, double k, double l, double m, double n, char* buffer){
+  char temp [10];
+  dtostrf(a,1,3,&temp[0]);
+  strcat(buffer, temp);
+  strcat(buffer, ",");
+  dtostrf(b,1,3,&temp[0]);
+  strcat(buffer, temp);
+  strcat(buffer, ",");
+  dtostrf(c,1,3,&temp[0]);
+  strcat(buffer, temp);
+  strcat(buffer, ",");
+  dtostrf(d,1,3,&temp[0]);
+  strcat(buffer, temp);
+  strcat(buffer, ",");
+  dtostrf(e,1,3,&temp[0]);
+  strcat(buffer, temp);
+  strcat(buffer, ",");
+  dtostrf(f,1,3,&temp[0]);
+  strcat(buffer, temp);
+  strcat(buffer, ",");
+  dtostrf(g,1,3,&temp[0]);
+  strcat(buffer, temp);
+  strcat(buffer, ",");
+  dtostrf(h,1,3,&temp[0]);
+  strcat(buffer, temp);
+  strcat(buffer, ",");
+  dtostrf(i,1,3,&temp[0]);
+  strcat(buffer, temp);
+  strcat(buffer, ",");
+  dtostrf(j,1,3,&temp[0]);
+  strcat(buffer, temp);
+  strcat(buffer, ",");
+  dtostrf(k,1,3,&temp[0]);
+  strcat(buffer, temp);
+  strcat(buffer, ",");
+  dtostrf(l,1,3,&temp[0]);
+  strcat(buffer, temp);
+  strcat(buffer, ",");
+  dtostrf(m,1,3,&temp[0]);
+  strcat(buffer, temp);
+  strcat(buffer, ",");
+  dtostrf(n,1,3,&temp[0]);
+  strcat(buffer, temp);
+  strcat(buffer, ",");
+}
