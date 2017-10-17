@@ -21,107 +21,130 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from cProfile import label
 
-def mad(data, axis=None):
-    return mean(absolute(data-mean(data,axis)), axis)
-# Load dataset
-# url = "C:/Users/CheeYeo/Desktop/CG3002/Code/Test case/TenMoves.csv" #CY's computer file path
-url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Test case/CompiledMoves.csv"  # Kelvin's computer file path
-# names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
-# dataset = pandas.read_csv(url, names=names)
-dataset = pandas.read_csv(url)
-window_size = 80
-
-# Split-out validation dataset
-array = dataset.values
-X = array[:, 0:12]
-Y = array[:, 12]
-
-# label encode
-le = preprocessing.LabelEncoder()
-le.fit(['NoMove', 'WaveHand', 'BusDrive', 'FrontBack', 'SideStep', 'Jumping', 'jumpingJack', 'turnClap', 'squatTurnClap', 'window', 'window360'])
-Y_encoded = le.transform(Y)
-
-# print(datetime.datetime.now().time())
-
-N = dataset.shape[0]
-dim_X = X.shape[1]
-K = N // window_size
-segments_X = numpy.empty((K, window_size, dim_X))
-segments_Y = numpy.empty((K, window_size))
-for i in range(K):
-    segment_X = X[i * window_size : (i * window_size) + window_size , :]
-    segment_X = preprocessing.normalize(segment_X)
-    segment_Y = Y_encoded[i * window_size : (i * window_size) + window_size]
-    segments_X[i] = segment_X
-    segments_Y[i] = segment_Y
-
-features = numpy.empty((K, 36))
-outputs = numpy.empty((K))
-
-for i in range(K):
-    for j in range(0, features.shape[1] - 1, 3):
-        features[i, j] = segments_X[i, : , j // 3].mean()
-        features[i, j + 1] = segments_X[i, : , j // 3].std()
-        features[i, j + 2] = mad(segments_X[i, : , j // 3])
-    outputs[i] = stats.mode(segments_Y[i])[0]
-
+class learning:
+    def _init_(self):
+        super(learning, self)._init_()
+        
+    def mad(self, data, axis=None):
+        return mean(absolute(data-mean(data,axis)), axis)
     
-# print(datetime.datetime.now().time())
+    def processData(self, data, model):
+        segment_X = preprocessing.normalize(data)
+        features = numpy.empty(36)
+        for j in range(0, features.shape[0] - 1, 3):
+            features[j] = segment_X[ : , j // 3].mean()
+            features[j + 1] = segment_X[ : , j // 3].std()
+            features[j + 2] = self.mad(segment_X[ : , j // 3])
+        return model.predict([features])
+    def machineTrain(self):
+        # Load dataset
+        # url = "C:/Users/CheeYeo/Desktop/CG3002/Code/Test case/TenMoves.csv" #CY's computer file path
+        url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Test case/TenMoves.csv"  # Kelvin's computer file path
+        # url = "/home/pi/Desktop/CompiledMoves.csv"
+        # names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
+        # dataset = pandas.read_csv(url, names=names)
+        dataset = pandas.read_csv(url)
+        global window_size
+        window_size = 80
+        shift_size = 40
+        
+        # Split-out validation dataset
+        array = dataset.values
+        X = array[:, 0:12]
+        Y = array[:, 12]
+        
+        # label encode
+        le = preprocessing.LabelEncoder()
+        le.fit(['NoMove', 'WaveHand', 'BusDrive', 'FrontBack', 'SideStep', 'Jumping', 'jumpingJack', 'turnClap', 'squatTurnClap', 'window', 'window360'])
+        Y_encoded = le.transform(Y)
+        
+        # print(datetime.datetime.now().time())
+        
+        N = dataset.shape[0]
+        dim_X = X.shape[1]
+        K = (N // shift_size) - 1
+        segments_X = numpy.empty((K, window_size, dim_X))
+        segments_Y = numpy.empty((K, window_size))
+        for i in range(K):
+            segment_X = X[i * shift_size : (i * shift_size) + window_size , :]
+            segment_X = preprocessing.normalize(segment_X)
+            segment_Y = Y_encoded[i * shift_size : (i * shift_size) + window_size]
+            segments_X[i] = segment_X
+            segments_Y[i] = segment_Y
+        
+        features = numpy.empty((K, 36))
+        outputs = numpy.empty((K))
+        
+        for i in range(K):
+            for j in range(0, features.shape[1] - 1, 3):
+                features[i, j] = segments_X[i, : , j // 3].mean()
+                features[i, j + 1] = segments_X[i, : , j // 3].std()
+                features[i, j + 2] = self.mad(data = segments_X[i, : , j // 3])
+            outputs[i] = stats.mode(segments_Y[i])[0]
+        
+            
+        # print(datetime.datetime.now().time())
+        
+        validation_size = 0.20
+        seed = 7
+        X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(features, outputs, test_size=validation_size, random_state=seed)
+        
+        # Test options and evaluation metric
+        scoring = 'accuracy'
+        
+        # Spot Check Algorithms
+        models = []
+        # models.append(('LR', LogisticRegression()))
+        # models.append(('LDA', LinearDiscriminantAnalysis()))
+        models.append(('KNN', KNeighborsClassifier(n_neighbors=3)))
+        # models.append(('CART', DecisionTreeClassifier()))
+        # models.append(('NB', GaussianNB()))
+        # models.append(('SVM', SVC()))
+        
+        # evaluate each model in turn
+        results = []
+        
+        names = []
+        for name, model in models:
+        	kfold = model_selection.KFold(n_splits=10, random_state=seed)
+        	cv_results = model_selection.cross_val_score(model, X_train, Y_train, cv=kfold, scoring=scoring)
+        	results.append(cv_results)
+        	names.append(name)
+        	msg = "%s: %f (%f)" % (name, cv_results.mean(), cv_results.std())
+        	print(msg)
+         
+        # Make predictions on validation dataset
+        knn = KNeighborsClassifier(n_neighbors=3)
+        knn.fit(X_train, Y_train)
+        predictions = knn.predict(X_validation)
+        print("Accuracy Score: ", accuracy_score(Y_validation, predictions), file=open('summary.txt', 'a'))
+        print("")
+        print("Confusion Matrix: \n", confusion_matrix(Y_validation, predictions, labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), file=open('summary.txt', 'a'))
+        print("")
+        print("Classification Report: \n", classification_report(Y_validation, predictions), file=open('summary.txt', 'a'))
+        
+        print("TEST\n")
+        print(self.processData(segment_X, knn))
+        print(stats.mode(segment_Y)[0])
+#         a = input()
+#         # rawData = numpy.empty(80, 12)
+#         # featureData = numpy.empty(24)
+#         while (a != "0"):
+#         #     counter = 0
+#         #     while (counter < 80):
+#             my_list = a.split()
+#             matrix = [my_list]
+#         #         rawData[counter] = matrix
+#         #         counter = counter + 1
+#             predictions = knn.predict(matrix)
+#             
+#         #     for j in range(0, featureData.shape[1] - 1, 2):
+#         #         featureData[j] = rawData[: , j//2].mean()
+#         #         featureData[j+1] = rawData[: , j//2].std()
+#         
+#         #     predictions = knn.predict(featureData)
+#             print(predictions)
+#             a = input()
 
-validation_size = 0.20
-seed = 8
-X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(features, outputs, test_size=validation_size, random_state=seed)
-
-# Test options and evaluation metric
-scoring = 'accuracy'
-
-# Spot Check Algorithms
-models = []
-# models.append(('LR', LogisticRegression()))
-# models.append(('LDA', LinearDiscriminantAnalysis()))
-models.append(('KNN', KNeighborsClassifier(n_neighbors=3)))
-# models.append(('CART', DecisionTreeClassifier()))
-# models.append(('NB', GaussianNB()))
-# models.append(('SVM', SVC()))
-
-# evaluate each model in turn
-results = []
-
-names = []
-for name, model in models:
-	kfold = model_selection.KFold(n_splits=10, random_state=seed)
-	cv_results = model_selection.cross_val_score(model, X_train, Y_train, cv=kfold, scoring=scoring)
-	results.append(cv_results)
-	names.append(name)
-	msg = "%s: %f (%f)" % (name, cv_results.mean(), cv_results.std())
-	print(msg)
- 
-# Make predictions on validation dataset
-knn = KNeighborsClassifier(n_neighbors=3)
-knn.fit(X_train, Y_train)
-predictions = knn.predict(X_validation)
-print("Accuracy Score: ", accuracy_score(Y_validation, predictions), file=open('summary.txt', 'a'))
-print("")
-print("Confusion Matrix: \n", confusion_matrix(Y_validation, predictions, labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), file=open('summary.txt', 'a'))
-print("")
-print("Classification Report: \n", classification_report(Y_validation, predictions), file=open('summary.txt', 'a'))
-
-a = input()
-# rawData = numpy.empty(80, 12)
-# featureData = numpy.empty(24)
-while (a != "0"):
-#     counter = 0
-#     while (counter < 80):
-    my_list = a.split()
-    matrix = [my_list]
-#         rawData[counter] = matrix
-#         counter = counter + 1
-    predictions = knn.predict(matrix)
-    
-#     for j in range(0, featureData.shape[1] - 1, 2):
-#         featureData[j] = rawData[: , j//2].mean()
-#         featureData[j+1] = rawData[: , j//2].std()
-
-#     predictions = knn.predict(featureData)
-    print(predictions)
-    a = input()
+run = learning()
+run.machineTrain()
