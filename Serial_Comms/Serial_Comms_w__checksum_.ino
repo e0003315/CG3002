@@ -30,6 +30,7 @@ const int COUNTERSTOP = 8;
 // Global Variables
 float current = 0;
 float voltage = 0;
+float avgVoltage = 5;
 float currentSum = 0;
 float voltageSum = 0;
 float power = 0;
@@ -115,10 +116,11 @@ void processPowerWrapper(void *p){
 void processPower(){
     voltage = (voltageSum / (float)NUM_SAMPLES * VOLTAGE_REF) / 1023.0;
     voltage = voltage * POTRATIO;
+    avgVoltage = (avgVoltage + voltage)/2; 
     current = (currentSum / (float)NUM_SAMPLES * VOLTAGE_REF) / 1023.0;
     current = current / (RS*RL);
     power = current * voltage;
-    cumPower += current;
+    cumPower += power * 1000 / avgVoltage;
     currentSum = 0;
     voltageSum = 0;
 }
