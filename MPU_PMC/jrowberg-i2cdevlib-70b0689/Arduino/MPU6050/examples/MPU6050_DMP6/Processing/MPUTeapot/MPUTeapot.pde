@@ -68,7 +68,7 @@ void setup() {
     println(Serial.list());
 
     // get the first available port (use EITHER this OR the specific port code below)
-    String portName = Serial.list()[0];
+    String portName = Serial.list()[4];
     
     // get a specific serial port (use EITHER this OR the first-available code above)
     //String portName = "COM4";
@@ -144,6 +144,8 @@ void draw() {
 void serialEvent(Serial port) {
     interval = millis();
     while (port.available() > 0) {
+        
+        println("Enter");
         int ch = port.read();
 
         if (synced == 0 && ch != '$') return;   // initial synchronization - also used to resync/realign if needed
