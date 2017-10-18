@@ -1,42 +1,53 @@
-#import serial_communication
+import serial_communication_checksum
 import auth_client
 import sys
 import learning
 import numpy
+import socket
 
 class Rpi_comms:
 
     def __init__(self, ip_addr, port_num):
-
+        ready = False
         #init serial comms
-        #self.Scomms = serial_communication.serial_communications()
+        self.Scomms = serial_communication_checksum.serial_communication()
         #init wireless comms
-#         self.Wcomms = auth_client.client(ip_addr, port_num)
         self.Ml = learning.learning()
         model = self.Ml.machineTrain()
         data = numpy.empty((80, 12))
         count = 0
-        switch = 0
        
+        self.Wcomms = auth_client.client(ip_addr, port_num)
+        print('init Wcomms')
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_address = (ip_addr, port_num)
+        print(server_address)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect(server_address)
+
+        while ready == False:
+            print('no handshake')
+            ready = self.Scomms.handshake()
+            
         #receivedData = self.Scomms.receiveData();
-        while True:
+        while ready:
             try:
 #                 receivedData = 'wavehands|7|7|7|7|'
-                receivedData = [-15752,-1840,6484,571,1790,-97,-17156,-408,3104,4318,-1108,-2198]
-                receivedData2 = [-19108,-6584,9528,618,-2725,109,-21276,5772,2800,90,-2643,-3755]
+#                 receivedData = [-15752,-1840,6484,571,1790,-97,-17156,-408,3104,4318,-1108,-2198]
 
 #                 print(receivedData)
-                if switch == 1 :
-                    data[count] = receivedData2
-                else:
-                    data[count] = receivedData2
                 count = count + 1
+                receivedData = self.Scomms.receiveData()
+                receivedData1 = input('enter plaintext')
                 if (count == 80) :
                     move = self.Ml.processData(data, model)
                     print(move)
                     count = 0
-                    switch = (switch + 1) % 2
 #                 self.Wcomms.sendData(receivedData)
+                #receivedData1 = 'wavehands|7|7|7|7|'
+                print(receivedData)
+                msg = self.Wcomms.packData(receivedData1)
+                sock.sendall(msg)
             except Exception as e:
                 print(e)
                 

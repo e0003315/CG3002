@@ -30,6 +30,7 @@ const int COUNTERSTOP = 8;
 // Global Variables
 float current = 0;
 float voltage = 0;
+float avgVoltage = 5;
 float currentSum = 0;
 float voltageSum = 0;
 float power = 0;
@@ -115,10 +116,11 @@ void processPowerWrapper(void *p){
 void processPower(){
     voltage = (voltageSum / (float)NUM_SAMPLES * VOLTAGE_REF) / 1023.0;
     voltage = voltage * POTRATIO;
+    avgVoltage = (avgVoltage + voltage)/2; 
     current = (currentSum / (float)NUM_SAMPLES * VOLTAGE_REF) / 1023.0;
     current = current / (RS*RL);
     power = current * voltage;
-    cumPower += current;
+    cumPower += power * 1000 / avgVoltage;
     currentSum = 0;
     voltageSum = 0;
 }
@@ -139,12 +141,14 @@ void handshake(){
 
 void serialize (){
   int i=0;
-  checksum = 0;
+  checksum = '0';
   int count=0;
+  //int16_t te stvar = 0;
   //char dataSize[5];
   sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", AcX, AcY, AcZ,GyX,GyY,GyZ,AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2);
+  //sprintf(data, "%d", testvar);
   sprintf(s, "%d", strlen(data));
-  Serial.println(strlen(data));
+  //Serial.println(strlen(data));
 
   char *p = data;
   while(*p != '\0'){
@@ -168,7 +172,23 @@ void sendData(void *p){
         Serial2.write("s");
         Serial2.write(checksum);
         Serial2.write("c");
-        Serial.println(data);
+//        Serial.print("data is");
+//        Serial.println(data);
+//        Serial.print("checksum is");
+//        Serial.println(checksum);
+        if(Serial2.available()){
+          char received = Serial2.read();
+          if(received ==  '2'){
+            //Got error so have to resend
+            serialize();
+            Serial2.write(data, strlen(data));
+            Serial2.write("d");
+            Serial2.write(s, strlen(s));
+            Serial2.write("s");
+            Serial2.write(checksum);
+            Serial2.write("c");
+          }
+        }
     }
   }
 }
@@ -190,7 +210,7 @@ void setup() {
   Wire.write(0);     // set to zero (wakes up the MPU-6050)
   Wire.endTransmission(true);
   
-  accelgyro.initialize();
+  //accelgyro.initialize();
   accelgyro.setXAccelOffset(-5407);
   accelgyro.setYAccelOffset(-111);
   accelgyro.setZAccelOffset(1246);
@@ -222,3 +242,5 @@ void setup() {
 
 void loop() {
 }
+
+
