@@ -106,21 +106,21 @@ void loop() {
   accelgyro1.getFIFOBytes(fifoBuffer1, packetSize1);
   fifoCount1 -= packetSize1;
   
-//  while (fifoCount2 < packetSize2) fifoCount2 = accelgyro2.getFIFOCount();
-//  accelgyro2.getFIFOBytes(fifoBuffer2, packetSize2);
-//  fifoCount2 -= packetSize2;
+  while (fifoCount2 < packetSize2) fifoCount2 = accelgyro2.getFIFOCount();
+  accelgyro2.getFIFOBytes(fifoBuffer2, packetSize2);
+  fifoCount2 -= packetSize2;
 
   //MPU6050_DMP6 Data Here!
   accelgyro1.dmpGetQuaternion(&q1, fifoBuffer1);
   accelgyro1.dmpGetAccel(&aa1, fifoBuffer1);
   accelgyro1.dmpGetGravity(&gravity1, &q1);
   accelgyro1.dmpGetLinearAccel(&aaReal1, &aa1, &gravity1);
-  Serial.print("areal\t");
-  Serial.print(aaReal1.x);
-  Serial.print("\t");
-  Serial.print(aaReal1.y);
-  Serial.print("\t");
-  Serial.println(aaReal1.z);
+//  Serial.print("areal\t");
+//  Serial.print(aaReal1.x);
+//  Serial.print("\t");
+//  Serial.print(aaReal1.y);
+//  Serial.print("\t");
+//  Serial.println(aaReal1.z);
   accelgyro1.dmpGetQuaternion(&q1, fifoBuffer1);
   accelgyro1.dmpGetGravity(&gravity1, &q1);
   accelgyro1.dmpGetYawPitchRoll(ypr1, &q1, &gravity1);
@@ -130,7 +130,6 @@ void loop() {
   Serial.print(ypr1[1] * 180/M_PI);
   Serial.print("\t");
   Serial.println(ypr1[2] * 180/M_PI);  
-
   
      
 //  acceleration in g, gyro in angular velocity
