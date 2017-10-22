@@ -2,69 +2,75 @@
 #include <avr/io.h>
 #include <FreeRTOS.h>
 #include <task.h>
+#include <semphr.h>
+#include "queue.h"
 
 #define STACK_SIZE   200
-#define LED_PIN6      6
-#define LED_PIN7      7
-#define LED_PIN8      8
-#define LED_PIN9      9
-#define TASK_WCET1	  1500
-#define TASK_WCET2	  2500
-#define TASK_WCET3	  1700
-#define TASK_WCET4	  700
+SemaphoreHandle_t processSemaphore = xSemaphoreCreateBinary();
+SemaphoreHandle_t sendSemaphore = xSemaphoreCreateBinary();
 
+void sendReadings(void *p)
+{
+	for( ;; ) {
+		//Serial.print("beforeprocessReadings ");
+		if( xSemaphoreTake( sendSemaphore, 5000 ) == pdTRUE )
+		{
+			//code goes here
 
-void myDelay(int ms) {
-	for (int i = 0; i < ms; i++) {
-		delayMicroseconds(1000);
+			Serial.println("3. sendReadings");
+		}
+	}
+}
+void processReadings(void *p)
+{
+	for( ;; ) {
+		//Serial.print("beforeprocessReadings ");
+		if( xSemaphoreTake( processSemaphore, 5000 ) == pdTRUE )
+		{
+			//code goes here
+
+			Serial.println("2. processReadings");
+			xSemaphoreGive(sendSemaphore);
+		}
 	}
 }
 
-
-void task1()
-{
-	Serial.println("task1");
-}
-
-
-void task2()
-{
-	Serial.println("task2");
-}
-
-void task3()
-{
-	Serial.println("task3");
-}
-void task4()
-{
-	Serial.println("task4");
-}
-
-void task0(void *p){
+void readSensors(void *p){
 	int count =0;
-	    Serial.println("task0");
-		TickType_t xLastWakeTime;
-		const TickType_t idle = 15620;
+	//Serial.println("readSensorStart");
 
-		// Initialise the xLastWakeTime variable with the current time.
-		xLastWakeTime = xTaskGetTickCount();
-		Serial.println("task0");
-		while(1){
-			//Serial.println(	xTaskGetTickCount());
-//			task4();
-			Serial.println(count);
-			Serial.println(configTICK_RATE_HZ);
-			Serial.println(configCPU_CLOCK_HZ );
-			count++;
-//
-			vTaskDelayUntil( &xLastWakeTime, idle);
-//			vTaskDelay(18000);
+	TickType_t xLastWakeTime;
+	const TickType_t xPeriod = 15620; //1hertz currently (divide 80 for 80hz) (divide 100 for 100hertz)
+	xLastWakeTime = 0;
 
-//			Serial.print("1");
-//			vTaskDelay(000);
+	for( ;; ) {
+		//code goes here
 
-		}
+
+		Serial.println(count);
+		Serial.println("1. readSensor");
+
+		xSemaphoreGive(processSemaphore);
+		vTaskDelayUntil( &xLastWakeTime, xPeriod);
+
+		count++;
+	}
+
+	//while(1){
+	//Serial.println(	xTaskGetTickCount());
+	//			task4();
+	//			Serial.println(count);
+	//			Serial.println(configTICK_RATE_HZ);
+	//			Serial.println(configCPU_CLOCK_HZ );
+	//			count++;
+	//
+	//			vTaskDelayUntil( &xLastWakeTime, idle);
+	//			vTaskDelay(18000);
+
+	//			Serial.print("1");
+	//			vTaskDelay(000);
+
+	//}
 }
 
 void setup()
@@ -73,13 +79,27 @@ void setup()
 }
 
 void loop() {
-	Serial.println("did i do it?");
-	xTaskCreate(task0,           // Pointer to the task entry function
-				"Task0",         // Task name
-				STACK_SIZE,      // Stack size
-				NULL,            // Pointer that will be used as parameter
-				0,               // Task priority
-				NULL);           // Used to pass back a handle by which the created task can be referenced.
+	Serial.println("freeRTOS Pls work....");
+	xTaskCreate(readSensors,           // Pointer to the task entry function
+			"read",         // Task name
+			STACK_SIZE,      // Stack size
+			NULL,            // Pointer that will be used as parameter
+			3,               // Task priority
+			NULL);           // Used to pass back a handle by which the created task can be referenced.
+
+	xTaskCreate(processReadings,           // Pointer to the task entry function
+			"process",         // Task name
+			STACK_SIZE,      // Stack size
+			NULL,            // Pointer that will be used as parameter
+			2,               // Task priority
+			NULL);           // Used to pass back a handle by which the created task can be referenced.
+
+	xTaskCreate(sendReadings,           // Pointer to the task entry function
+			"send",         // Task name
+			STACK_SIZE,      // Stack size
+			NULL,            // Pointer that will be used as parameter
+			1,               // Task priority
+			NULL);           // Used to pass back a handle by which the created task can be referenced.
 
 	vTaskStartScheduler();
 }
