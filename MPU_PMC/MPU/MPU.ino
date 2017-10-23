@@ -24,6 +24,8 @@ MPU6050 accelgyro2(0x69);
 const uint8_t MPU_addr1 = 0x68; // I2C address of the MPU-6050
 const uint8_t MPU_addr2 = 0x69;
 
+int AcX1, AcY1, AcZ1, GyX1, GyY1, GyZ1;
+
 uint16_t packetSize1;    // expected DMP packet size (default is 42 bytes)
 uint16_t fifoCount1;     // count of all bytes currently in FIFO
 uint8_t fifoBuffer1[64]; // FIFO storage buffer
@@ -98,39 +100,39 @@ void setup() {
 }
 void loop() {
 
-  //  accelgyro1.getMotion6(&AcX1, &AcY1, &AcZ1, &GyX1, &GyY1, &GyZ1);
-  //  accelgyro2.getMotion6(&AcX2, &AcY2, &AcZ2, &GyX2, &GyY2, &GyZ2);
-  fifoCount1 = accelgyro1.getFIFOCount();
-  fifoCount2 = accelgyro2.getFIFOCount();
-  while (fifoCount1 < packetSize1) fifoCount1 = accelgyro1.getFIFOCount();
-  accelgyro1.getFIFOBytes(fifoBuffer1, packetSize1);
-  fifoCount1 -= packetSize1;
-  
-  while (fifoCount2 < packetSize2) fifoCount2 = accelgyro2.getFIFOCount();
-  accelgyro2.getFIFOBytes(fifoBuffer2, packetSize2);
-  fifoCount2 -= packetSize2;
-
-  //MPU6050_DMP6 Data Here!
-  accelgyro1.dmpGetQuaternion(&q1, fifoBuffer1);
-  accelgyro1.dmpGetAccel(&aa1, fifoBuffer1);
-  accelgyro1.dmpGetGravity(&gravity1, &q1);
-  accelgyro1.dmpGetLinearAccel(&aaReal1, &aa1, &gravity1);
+    accelgyro1.getMotion6(&AcX1, &AcY1, &AcZ1, &GyX1, &GyY1, &GyZ1);
+ //   accelgyro2.getMotion6(&AcX2, &AcY2, &AcZ2, &GyX2, &GyY2, &GyZ2);
+//  fifoCount1 = accelgyro1.getFIFOCount();
+//  fifoCount2 = accelgyro2.getFIFOCount();
+//  while (fifoCount1 < packetSize1) fifoCount1 = accelgyro1.getFIFOCount();
+//  accelgyro1.getFIFOBytes(fifoBuffer1, packetSize1);
+//  fifoCount1 -= packetSize1;
+//  
+//  while (fifoCount2 < packetSize2) fifoCount2 = accelgyro2.getFIFOCount();
+//  accelgyro2.getFIFOBytes(fifoBuffer2, packetSize2);
+//  fifoCount2 -= packetSize2;
+//
+//  //MPU6050_DMP6 Data Here!
+//  accelgyro1.dmpGetQuaternion(&q1, fifoBuffer1);
+//  accelgyro1.dmpGetAccel(&aa1, fifoBuffer1);
+//  accelgyro1.dmpGetGravity(&gravity1, &q1);
+//  accelgyro1.dmpGetLinearAccel(&aaReal1, &aa1, &gravity1);
 //  Serial.print("areal\t");
 //  Serial.print(aaReal1.x);
 //  Serial.print("\t");
 //  Serial.print(aaReal1.y);
 //  Serial.print("\t");
 //  Serial.println(aaReal1.z);
-  accelgyro1.dmpGetQuaternion(&q1, fifoBuffer1);
-  accelgyro1.dmpGetGravity(&gravity1, &q1);
-  accelgyro1.dmpGetYawPitchRoll(ypr1, &q1, &gravity1);
-  Serial.print("ypr1\t");
-  Serial.print(ypr1[0] * 180/M_PI);
-  Serial.print("\t");
-  Serial.print(ypr1[1] * 180/M_PI);
-  Serial.print("\t");
-  Serial.println(ypr1[2] * 180/M_PI);  
-  
+//  accelgyro1.dmpGetQuaternion(&q1, fifoBuffer1);
+//  accelgyro1.dmpGetGravity(&gravity1, &q1);
+//  accelgyro1.dmpGetYawPitchRoll(ypr1, &q1, &gravity1);
+//  Serial.print("ypr1\t");
+//  Serial.print(ypr1[0] * 180/M_PI);
+//  Serial.print("\t");
+//  Serial.print(ypr1[1] * 180/M_PI);
+//  Serial.print("\t");
+//  Serial.println(ypr1[2] * 180/M_PI);  
+//  
      
 //  acceleration in g, gyro in angular velocity
 //    sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
@@ -141,7 +143,8 @@ void loop() {
 
 //    if(count == 100) {
 //    printPowerConsumption();
-//    Serial.print(AcX1/16384.0); Serial.print("\t"); Serial.print(AcY1/16384.0); Serial.print("\t"); Serial.print(AcZ1/16384.0); Serial.println("\t");
+    Serial.print("AcX: ");Serial.print(AcX1); Serial.print("\t"); Serial.print("AcY: ");Serial.print(AcY1); Serial.print("\t"); Serial.print("AcZ: ");Serial.print(AcZ1); Serial.println("\t");
+//    Serial.print("GyX: ");Serial.print(GyX1); Serial.print("\t"); Serial.print("GyY: ");Serial.print(GyY1); Serial.print("\t"); Serial.print("GyZ: ");Serial.print(GyZ1); Serial.println("\t");
 //    convertToString(AcX1 / 16384.0, AcY1/ 16384.0, AcZ1/ 16384.0, kalAngleX1, kalAngleY1, kalAngleZ1, AcX2/ 16384.0, AcY2/ 16384.0, AcZ2/ 16384.0, kalAngleX2, kalAngleY2, kalAngleZ2, current, voltage, buffer);
 //    Serial.println (buffer);
 //    memset(buffer, 0, 50);
