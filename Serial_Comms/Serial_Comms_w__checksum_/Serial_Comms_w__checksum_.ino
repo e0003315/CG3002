@@ -1,16 +1,14 @@
 #include <Arduino_FreeRTOS.h>
 #include <semphr.h>
 #include "I2Cdev.h"
-#include "MPU6050.h"
+#include "MPU6050_6Axis_MotionApps20.h"
 #include "Wire.h"
 #include <String.h>
 
-MPU6050 accelgyro(0x68);
+MPU6050 accelgyro1(0x68);
 MPU6050 accelgyro2(0x69);
-#define sen1 6
-#define sen2 7
 #define CURRENT_PIN A0
-#define VOLTAGE_PIN A1
+#define VOLTAGE_PIN A14
 #define STACK_SIZE 200
 
 //semaphores
@@ -35,8 +33,8 @@ float currentSum = 0;
 float voltageSum = 0;
 float power = 0;
 float cumPower = 0;
-int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
-int16_t AcX2,AcY2,AcZ2,Tmp2,GyX2,GyY2,GyZ2;
+int16_t AcX1,AcY1,AcZ1,GyX1,GyY1,GyZ1;
+int16_t AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2;
 int counter = 0;
 int power_counter =0;
 int flag =0;
@@ -44,37 +42,9 @@ char data[1000] = "";
 char s[1000] = "";
 byte checksum = 0;
 
-void readacc(int i){
-  if(i==1){
-    Wire.beginTransmission(MPU1_addr);
-    Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
-    Wire.endTransmission(false);
-    Wire.requestFrom(MPU1_addr,14,true);  // request a total of 14 registers
-  }
-  else if(i==2){
-    Wire.beginTransmission(MPU2_addr);
-    Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
-    Wire.endTransmission(false);
-    Wire.requestFrom(MPU2_addr,14,true);  // request a total of 14 registers
-  }
-  if(i==1){
-    AcX=Wire.read()<<8|Wire.read();  // 0x3B (ACCEL_XOUT_H) & 0x3C (ACCEL_XOUT_L)     
-    AcY=Wire.read()<<8|Wire.read();  // 0x3D (ACCEL_YOUT_H) & 0x3E (ACCEL_YOUT_L)
-    AcZ=Wire.read()<<8|Wire.read();  // 0x3F (ACCEL_ZOUT_H) & 0x40 (ACCEL_ZOUT_L)
-    Tmp=Wire.read()<<8|Wire.read();  // 0x41 (TEMP_OUT_H) & 0x42 (TEMP_OUT_L)
-    GyX=Wire.read()<<8|Wire.read();  // 0x43 (GYRO_XOUT_H) & 0x44 (GYRO_XOUT_L)
-    GyY=Wire.read()<<8|Wire.read();  // 0x45 (GYRO_YOUT_H) & 0x46 (GYRO_YOUT_L)
-    GyZ=Wire.read()<<8|Wire.read();  // 0x47 (GYRO_ZOUT_H) & 0x48 (GYRO_ZOUT_L)
-  }
-  else if(i==2){
-    AcX2=Wire.read()<<8|Wire.read();  // 0x3B (ACCEL_XOUT_H) & 0x3C (ACCEL_XOUT_L)     
-    AcY2=Wire.read()<<8|Wire.read();  // 0x3D (ACCEL_YOUT_H) & 0x3E (ACCEL_YOUT_L)
-    AcZ2=Wire.read()<<8|Wire.read();  // 0x3F (ACCEL_ZOUT_H) & 0x40 (ACCEL_ZOUT_L)
-    Tmp2=Wire.read()<<8|Wire.read();  // 0x41 (TEMP_OUT_H) & 0x42 (TEMP_OUT_L)
-    GyX2=Wire.read()<<8|Wire.read();  // 0x43 (GYRO_XOUT_H) & 0x44 (GYRO_XOUT_L)
-    GyY2=Wire.read()<<8|Wire.read();  // 0x45 (GYRO_YOUT_H) & 0x46 (GYRO_YOUT_L)
-    GyZ2=Wire.read()<<8|Wire.read();  // 0x47 (GYRO_ZOUT_H) & 0x48 (GYRO_ZOUT_L)
-  }
+void readacc(){
+  accelgyro1.getMotion6(&AcX1, &AcY1, &AcZ1, &GyX1, &GyY1, &GyZ1);
+  accelgyro2.getMotion6(&AcX2, &AcY2, &AcZ2, &GyX2, &GyY2, &GyZ2);
 }
 
 void readData(void *p){
@@ -86,8 +56,7 @@ void readData(void *p){
   // Initialize the xLastWakeTime variable with the current time.
   xLastWakeTime = xTaskGetTickCount();
   for( ;; ) {
-    readacc(1);
-    readacc(2);
+    readacc();
     counter = counter+1;
 
     if(counter == COUNTERSTOP){
@@ -126,6 +95,7 @@ void processPower(){
 }
 
 void handshake(){
+  Serial.println("In handshake!");
   while (flag !=1) {
   if(Serial2.available()){
       char received = Serial2.read();
@@ -137,6 +107,7 @@ void handshake(){
       }
    }
   }
+  Serial.println("Out handshake");
 }
 
 void serialize (){
@@ -145,7 +116,7 @@ void serialize (){
   int count=0;
   //int16_t te stvar = 0;
   //char dataSize[5];
-  sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", AcX, AcY, AcZ,GyX,GyY,GyZ,AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2);
+  sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",AcX1,AcY1,AcZ1,GyX1,GyY1,GyZ1,AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2);
   //sprintf(data, "%d", testvar);
   sprintf(s, "%d", strlen(data));
   //Serial.println(strlen(data));
@@ -198,39 +169,38 @@ void setup() {
   Serial.begin(115200);
   Serial2.begin(115200);
 
-  pinMode(sen1, OUTPUT);
-  pinMode(sen2, OUTPUT);
+  pinMode(7, OUTPUT);
+  digitalWrite(7, HIGH);
 
-  digitalWrite(sen1, HIGH);
-  digitalWrite(sen2, LOW);
-
-  Wire.begin();
-  Wire.beginTransmission(MPU1_addr);
-  Wire.write(0x6B);  // PWR_MGMT_1 register
-  Wire.write(0);     // set to zero (wakes up the MPU-6050)
-  Wire.endTransmission(true);
+    // join I2C bus (I2Cdev library doesn't do this automatically)
+  #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+    Wire.begin();
+    Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+  #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
+    Fastwire::setup(400, true);
+  #endif
   
-  //accelgyro.initialize();
-  accelgyro.setXAccelOffset(-5407);
-  accelgyro.setYAccelOffset(-111);
-  accelgyro.setZAccelOffset(1246);
-  accelgyro.setXGyroOffset(99);
-  accelgyro.setYGyroOffset(-9);
-  accelgyro.setZGyroOffset(-97);
-
-  Wire.begin();
-  Wire.beginTransmission(MPU2_addr);
-  Wire.write(0x6B);  // PWR_MGMT_1 register
-  Wire.write(0);     // set to zero (wakes up the MPU-6050)
-  Wire.endTransmission(true);
+  accelgyro1.initialize();
+  accelgyro1.dmpInitialize();
+  accelgyro1.setDMPEnabled(true);
+  accelgyro1.setXAccelOffset(-5407);
+  accelgyro1.setYAccelOffset(-111);
+  accelgyro1.setZAccelOffset(1246);
+  accelgyro1.setXGyroOffset(99);
+  accelgyro1.setYGyroOffset(-9);
+  accelgyro1.setZGyroOffset(-97);
+  accelgyro1.setFullScaleAccelRange(MPU6050_ACCEL_FS_4);
 
   accelgyro2.initialize();
-  accelgyro2.setXAccelOffset(-1417);
-  accelgyro2.setYAccelOffset(3542);
-  accelgyro2.setZAccelOffset(1089);
-  accelgyro2.setXGyroOffset(61);
-  accelgyro2.setYGyroOffset(-8);
-  accelgyro2.setZGyroOffset(26);
+  accelgyro2.dmpInitialize(); 
+  accelgyro2.setDMPEnabled(true);
+  accelgyro2.setFullScaleAccelRange(MPU6050_ACCEL_FS_4);
+  accelgyro2.setXAccelOffset(-1459);
+  accelgyro2.setYAccelOffset(3527);
+  accelgyro2.setZAccelOffset(1094);
+  accelgyro2.setXGyroOffset(42);
+  accelgyro2.setYGyroOffset(16);
+  accelgyro2.setZGyroOffset(30);
 
   handshake();
   if (flag ==1){

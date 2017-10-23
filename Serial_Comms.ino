@@ -34,7 +34,7 @@ float currentSum = 0;
 float voltageSum = 0;
 float power = 0;
 float cumPower = 0;
-int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
+int16_t AcX1,AcY1,AcZ1,Tmp1,GyX1,GyY1,GyZ1;
 int16_t AcX2,AcY2,AcZ2,Tmp2,GyX2,GyY2,GyZ2;
 int counter = 0;
 int power_counter =0;
@@ -47,18 +47,18 @@ char s[1000] = "";
 char ack;
 
 void readacc(int i){
-  if(i==1){
-    Wire.beginTransmission(MPU1_addr);
-    Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
-    Wire.endTransmission(false);
-    Wire.requestFrom(MPU1_addr,14,true);  // request a total of 14 registers
-  }
-  else if(i==2){
-    Wire.beginTransmission(MPU2_addr);
-    Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
-    Wire.endTransmission(false);
-    Wire.requestFrom(MPU2_addr,14,true);  // request a total of 14 registers
-  }
+//  if(i==1){
+//    Wire.beginTransmission(MPU1_addr);
+//    Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
+//    Wire.endTransmission(false);
+//    Wire.requestFrom(MPU1_addr,14,true);  // request a total of 14 registers
+//  }
+//  else if(i==2){
+//    Wire.beginTransmission(MPU2_addr);
+//    Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
+//    Wire.endTransmission(false);
+//    Wire.requestFrom(MPU2_addr,14,true);  // request a total of 14 registers
+//  }
   if(i==1){
     AcX=Wire.read()<<8|Wire.read();  // 0x3B (ACCEL_XOUT_H) & 0x3C (ACCEL_XOUT_L)     
     AcY=Wire.read()<<8|Wire.read();  // 0x3D (ACCEL_YOUT_H) & 0x3E (ACCEL_YOUT_L)
@@ -145,7 +145,7 @@ void serialize (){
   int i=0;
   int count=0;
   //char dataSize[5];
-  sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", AcX, AcY, AcZ,GyX,GyY,GyZ,AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2);
+  sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",AcX1,AcY1,AcZ1,GyX1,GyY1,GyZ1,AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2);
   sprintf(s, "%d", strlen(data));
   Serial.println(strlen(data));
   

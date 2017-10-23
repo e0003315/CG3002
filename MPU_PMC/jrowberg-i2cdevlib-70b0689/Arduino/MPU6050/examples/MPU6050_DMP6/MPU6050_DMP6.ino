@@ -97,7 +97,7 @@ MPU6050 mpu;
 // from the FIFO. Note this also requires gravity vector calculations.
 // Also note that yaw/pitch/roll angles suffer from gimbal lock (for
 // more info, see: http://en.wikipedia.org/wiki/Gimbal_lock)
-#define OUTPUT_READABLE_YAWPITCHROLL
+//#define OUTPUT_READABLE_YAWPITCHROLL
 
 // uncomment "OUTPUT_READABLE_REALACCEL" if you want to see acceleration
 // components with gravity removed. This acceleration reference frame is
@@ -110,7 +110,7 @@ MPU6050 mpu;
 // components with gravity removed and adjusted for the world frame of
 // reference (yaw is relative to initial orientation, since no magnetometer
 // is present in this case). Could be quite handy in some cases.
-//#define OUTPUT_READABLE_WORLDACCEL
+#define OUTPUT_READABLE_WORLDACCEL
 
 // uncomment "OUTPUT_TEAPOT" if you want output that matches the
 // format used for the InvenSense teapot demo
@@ -307,8 +307,8 @@ void loop() {
         #ifdef OUTPUT_READABLE_YAWPITCHROLL
             // display Euler angles in degrees
 
-            count = count + 1;
-            if(count == 100) {
+//            count = count + 1;
+//            if(count == 100) {
             mpu.dmpGetQuaternion(&q, fifoBuffer);
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
@@ -331,23 +331,23 @@ void loop() {
 //            Serial.print(aaReal.y);
 //            Serial.print("\t");
 //            Serial.println(aaReal.z);
-            count = 0;
-            }
+//            count = 0;
+//            }
         #endif
 //
-//        #ifdef OUTPUT_READABLE_REALACCEL
-//            // display real acceleration, adjusted to remove gravity
-//            mpu.dmpGetQuaternion(&q, fifoBuffer);
-//            mpu.dmpGetAccel(&aa, fifoBuffer);
-//            mpu.dmpGetGravity(&gravity, &q);
-//            mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-//            Serial.print("areal\t");
-//            Serial.print(aaReal.x);
-//            Serial.print("\t");
-//            Serial.print(aaReal.y);
-//            Serial.print("\t");
-//            Serial.println(aaReal.z);
-//        #endif
+        #ifdef OUTPUT_READABLE_REALACCEL
+            // display real acceleration, adjusted to remove gravity
+            mpu.dmpGetQuaternion(&q, fifoBuffer);
+            mpu.dmpGetAccel(&aa, fifoBuffer);
+            mpu.dmpGetGravity(&gravity, &q);
+            mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
+            Serial.print("areal\t");
+            Serial.print(aaReal.x);
+            Serial.print("\t");
+            Serial.print(aaReal.y);
+            Serial.print("\t");
+            Serial.println(aaReal.z);
+        #endif
 
 //        #ifdef OUTPUT_READABLE_WORLDACCEL
 //            // display initial world-frame acceleration, adjusted to remove gravity
