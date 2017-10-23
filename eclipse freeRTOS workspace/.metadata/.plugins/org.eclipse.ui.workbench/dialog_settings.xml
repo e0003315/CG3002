@@ -27,6 +27,8 @@
 		<item value="false" key="WizardFileSystemResourceImportPage1.STORE_CREATE_CONTAINER_STRUCTURE_ID"/>
 		<item value="false" key="WizardFileSystemResourceImportPage1.STORE_OVERWRITE_EXISTING_RESOURCES_ID"/>
 		<list key="WizardFileSystemResourceImportPage1.STORE_SOURCE_NAMES_ID">
+			<item value="C:\Users\JRHu\Downloads\I2Cdev"/>
+			<item value="C:\Users\JRHu\Downloads\MPU6050"/>
 			<item value="C:\Users\JRHu\Desktop\freeRTOS82x"/>
 		</list>
 	</section>

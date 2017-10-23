@@ -1,0 +1,94 @@
+#include <Arduino.h>
+#include <avr/io.h>
+#include <FreeRTOS.h>
+#include <task.h>
+#include <semphr.h>
+#include "queue.h"
+
+#define STACK_SIZE   200
+SemaphoreHandle_t processSemaphore = xSemaphoreCreateBinary();
+SemaphoreHandle_t sendSemaphore = xSemaphoreCreateBinary();
+
+void sendReadings(void *p)
+{
+	for( ;; ) {
+		//Serial.print("beforeprocessReadings ");
+		if( xSemaphoreTake( sendSemaphore, 5000 ) == pdTRUE )
+		{
+			Serial.print("sendReadinss");
+		}
+	}
+}
+void processReadings(void *p)
+{
+	for( ;; ) {
+		//Serial.print("beforeprocessReadings ");
+		if( xSemaphoreTake( processSemaphore, 5000 ) == pdTRUE )
+		{
+			Serial.print("afterprocessReadings");
+		}
+	}
+}
+
+void readSensors(void *p){
+		//int count =0;
+	    Serial.println("readSensor");
+
+		TickType_t xLastWakeTime;
+		const TickType_t xPeriod = 15620;
+		xLastWakeTime = 0;
+
+		for( ;; ) {
+				Serial.print("readSensor");
+
+				xSemaphoreGive(processSemaphore);
+				vTaskDelayUntil( &xLastWakeTime, xPeriod);
+		}
+
+		//while(1){
+			//Serial.println(	xTaskGetTickCount());
+//			task4();
+//			Serial.println(count);
+//			Serial.println(configTICK_RATE_HZ);
+//			Serial.println(configCPU_CLOCK_HZ );
+//			count++;
+//
+//			vTaskDelayUntil( &xLastWakeTime, idle);
+//			vTaskDelay(18000);
+
+//			Serial.print("1");
+//			vTaskDelay(000);
+
+		//}
+}
+
+void setup()
+{
+	Serial.begin(115200);
+}
+
+void loop() {
+	Serial.println("did i do it?");
+	xTaskCreate(readSensors,           // Pointer to the task entry function
+				"read",         // Task name
+				STACK_SIZE,      // Stack size
+				NULL,            // Pointer that will be used as parameter
+				3,               // Task priority
+				NULL);           // Used to pass back a handle by which the created task can be referenced.
+
+	xTaskCreate(processReadings,           // Pointer to the task entry function
+					"process",         // Task name
+					STACK_SIZE,      // Stack size
+					NULL,            // Pointer that will be used as parameter
+					2,               // Task priority
+					NULL);           // Used to pass back a handle by which the created task can be referenced.
+
+	xTaskCreate(sendReadings,           // Pointer to the task entry function
+					"send",         // Task name
+					STACK_SIZE,      // Stack size
+					NULL,            // Pointer that will be used as parameter
+					1,               // Task priority
+					NULL);           // Used to pass back a handle by which the created task can be referenced.
+
+	vTaskStartScheduler();
+}

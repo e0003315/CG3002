@@ -1,0 +1,248 @@
+#include <Arduino.h>
+#include <avr/io.h>
+#include <FreeRTOS.h>
+#include <task.h>
+#include <semphr.h>
+#include "queue.h"
+
+#define STACK_SIZE 175
+#define R1 6
+#define Y1 7
+#define Y2 8
+#define Y3 9
+#define Buzz 10
+#define DEBOUNCE_DELAY 200
+#define PIN_PTTM A0
+
+unsigned long lastDebounce0 = 0;
+unsigned long lastDebounce1 = 0;
+int currentSpeed = 0;
+int desiredSpeed = 0;
+int distance = 4;
+int val = 0;
+int isrTrigger =0;
+
+SemaphoreHandle_t computeSemaphore = xSemaphoreCreateBinary();
+QueueHandle_t uartQueue, currSpdQueue;
+
+struct UARTmessage {
+	int currSpd;
+	int desiredSpd;
+	int dist;
+} xMessage;
+
+void producer(void *p){
+
+	TickType_t xLastWakeTime;
+	const TickType_t xFrequency = 1000;
+
+	// Initialize the xLastWakeTime variable with the current time.
+	xLastWakeTime = xTaskGetTickCount();
+	struct UARTmessage *message;
+	for( ;; ) {
+		Serial.print("producer ");
+		message->currSpd = currentSpeed;
+		message->desiredSpd = desiredSpeed;
+		message->dist = distance;
+		message = &xMessage;
+		xQueueSend(uartQueue, (void *) &message, 2000);
+		vTaskDelayUntil( &xLastWakeTime, xFrequency );
+	}
+}
+
+void distPrint(int dist){
+	if(dist == 0)
+		Serial.println("d");
+	else if(dist >=3)
+		Serial.println("4d");
+	else {
+		Serial.print(dist+1);
+		Serial.println("d");
+	}
+}
+
+void consumer(void *p){
+	TickType_t xLastWakeTime;
+	const TickType_t xFrequency = 1000;
+	// Initialize the xLastWakeTime variable with the current time.
+	xLastWakeTime = xTaskGetTickCount();
+
+	struct UARTmessage *message;
+	for( ;; ) {
+		if (xQueueReceive(uartQueue, &( message ), 2000)){
+			Serial.print("curr: ");
+			Serial.print(message->currSpd);
+			Serial.print(" des: ");
+			Serial.print(message->desiredSpd);
+			Serial.print(" dist: ");
+			distPrint(message->dist);
+		}
+		vTaskDelayUntil( &xLastWakeTime, xFrequency );
+	}
+}
+
+void speedIndicator(void *p){
+	int speed =0;
+	for( ;; ) {
+		if (xQueueReceive(currSpdQueue, &speed, 2000))
+		{
+			if(speed >= 3)
+				digitalWrite(Y3, HIGH);
+			else
+				digitalWrite(Y3, LOW);
+
+			if(speed >= 2)
+				digitalWrite(Y2, HIGH);
+			else
+				digitalWrite(Y2, LOW);
+
+			if(speed >= 1){
+				digitalWrite(Y1, HIGH);
+			}
+			else{
+				digitalWrite(Y1, LOW);
+			}
+			analogWrite(Buzz, (speed+1)*75/4);
+		}
+	}
+}
+
+void brake(int *counter, int *brakeFlag){
+	switch(*counter){
+	case 1:
+		digitalWrite(R1, HIGH);
+		break;
+	case 3:
+		digitalWrite(R1, LOW);
+		*counter = 0;
+		*brakeFlag = 0;
+		break;
+	}
+}
+
+void computeSpeed(void *p){
+	int counter = 0;
+	int brakeFlag = 0;
+	for( ;; ) {
+		Serial.print("computespeed ");
+		if( xSemaphoreTake( computeSemaphore, 500 ) == pdTRUE )
+		{
+			if(distance >= desiredSpeed){
+				currentSpeed = desiredSpeed;
+			}
+			else if (distance < desiredSpeed){
+				if(currentSpeed > distance){
+					currentSpeed = distance;
+					brakeFlag =1;
+				}
+				else if(currentSpeed<distance)
+					currentSpeed = distance;
+			}
+			if(isrTrigger==0 && brakeFlag){
+				counter++;
+			}
+			isrTrigger = 0;
+			brake(&counter, &brakeFlag);
+			xQueueSend(currSpdQueue, (void *) &currentSpeed, 2000);
+		}
+	}
+}
+
+void readDistance(void *p){
+	TickType_t xLastWakeTime;
+	const TickType_t xPeriod = 500;
+	xLastWakeTime = 0;
+	for( ;; ) {
+		Serial.print("readdist ");
+		val = analogRead(PIN_PTTM);
+		distance = val/250;
+
+		xSemaphoreGive(computeSemaphore);
+		vTaskDelayUntil( &xLastWakeTime, xPeriod);
+	}
+}
+
+void accelerateISR()
+{
+	static signed char xHigherPriorityTaskWoken = pdFALSE;
+
+	if((millis()-lastDebounce0) > DEBOUNCE_DELAY) {
+		lastDebounce0 = millis();
+
+		desiredSpeed = (desiredSpeed <3) ? desiredSpeed+1: desiredSpeed;
+		isrTrigger = 1;
+
+		xHigherPriorityTaskWoken = pdFALSE;
+		xSemaphoreGiveFromISR( computeSemaphore, &xHigherPriorityTaskWoken);
+	}
+	if(xHigherPriorityTaskWoken == pdTRUE){
+		taskYIELD();
+	}
+}
+
+void brakeISR()
+{
+	static signed char xHigherPriorityTaskWoken = pdFALSE;
+
+	if((millis()-lastDebounce1) > DEBOUNCE_DELAY) {
+		lastDebounce1 = millis();
+
+		desiredSpeed = (desiredSpeed > 0) ? desiredSpeed-1: desiredSpeed;
+		isrTrigger = 1;
+
+		xHigherPriorityTaskWoken = pdFALSE;
+		xSemaphoreGiveFromISR( computeSemaphore, &xHigherPriorityTaskWoken);
+	}
+	if(xHigherPriorityTaskWoken == pdTRUE){
+		taskYIELD();
+	}
+}
+
+
+void setup() {
+	attachInterrupt(0, brakeISR, RISING);
+	attachInterrupt(1, accelerateISR, RISING);
+	pinMode(R1, OUTPUT);
+	pinMode(Y1, OUTPUT);
+	pinMode(Y2, OUTPUT);
+	pinMode(Y3, OUTPUT);
+	uartQueue = xQueueCreate(5, sizeof(struct UARTmessage *));
+	currSpdQueue = xQueueCreate(10, sizeof(int));
+	Serial.begin(115200);
+	Serial.println("setup ");
+}
+
+void loop() {
+	xTaskCreate(readDistance,           // Pointer to the task entry function
+			"readDistance",         // Task name
+			STACK_SIZE,      // Stack size
+			NULL,            // Pointer that will be used as parameter
+			5,               // Task priority
+			NULL);           // Used to pass back a handle by which the created task can be referenced.
+	xTaskCreate(computeSpeed,           // Pointer to the task entry function
+			"computeSpeed",         // Task name
+			STACK_SIZE,      // Stack size
+			NULL,            // Pointer that will be used as parameter
+			4,               // Task priority
+			NULL);           // Used to pass back a handle by which the created task can be referenced.
+	xTaskCreate(producer,           // Pointer to the task entry function
+			"producer",         // Task name
+			STACK_SIZE,      // Stack size
+			NULL,            // Pointer that will be used as parameter
+			3,               // Task priority
+			NULL);           // Used to pass back a handle by which the created task can be referenced.
+	xTaskCreate(speedIndicator,           // Pointer to the task entry function
+			"speedIndicator",         // Task name
+			STACK_SIZE,      // Stack size
+			NULL,            // Pointer that will be used as parameter
+			2,               // Task priority
+			NULL);           // Used to pass back a handle by which the created task can be referenced.
+	xTaskCreate(consumer,           // Pointer to the task entry function
+			"consumer",         // Task name
+			STACK_SIZE,      // Stack size
+			NULL,            // Pointer that will be used as parameter
+			1,               // Task priority
+			NULL);           // Used to pass back a handle by which the created task can be referenced.
+	vTaskStartScheduler();
+}
+
