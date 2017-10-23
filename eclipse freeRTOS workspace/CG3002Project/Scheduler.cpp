@@ -83,23 +83,36 @@ void readacc(int i){
   }
 }
 
+void serialize (){
+  int i=0;
+  checksum = '0';
+  int count=0;
+  sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", AcX, AcY, AcZ,GyX,GyY,GyZ,AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2);
+  sprintf(s, "%d", strlen(data));
+
+  char *p = data;
+  while(*p != '\0'){
+    checksum ^= *p;
+    p++;
+  }
+}
+
 void sendReadings(void *p)
 {
 	for( ;; ) {
 		//Serial.print("beforeprocessReadings ");
 		if( xSemaphoreTake( sendSemaphore, 5000 ) == pdTRUE )
 		{
-			//code goes here
-			  sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", AcX, AcY, AcZ,GyX,GyY,GyZ,AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2);
-			  sprintf(s, "%d", strlen(data));
-			  Serial.println(strlen(data));
-			  Serial.println(data);
-
-			Serial.println("3. sendReadings");
+			serialize();
+			Serial2.write(data, strlen(data));
+	        Serial2.write("d");
+	        Serial2.write(s, strlen(s));
+	        Serial2.write("s");
+            Serial.println(data);
 		}
 	}
 }
-void processReadings(void *p)
+void processPowerWrapper(void *p)
 {
 	for( ;; ) {
 		//Serial.print("beforeprocessReadings ");
@@ -113,7 +126,7 @@ void processReadings(void *p)
 	}
 }
 
-void readSensors(void *p){
+void readData(void *p){
 	int count =0;
 
 	TickType_t xLastWakeTime;
@@ -152,22 +165,22 @@ void setup()
 
 void loop() {
 	Serial.println("freeRTOS Pls work....");
-	xTaskCreate(readSensors,           // Pointer to the task entry function
-			"read",         // Task name
+	xTaskCreate(readData,           // Pointer to the task entry function
+			"readData",         // Task name
 			STACK_SIZE,      // Stack size
 			NULL,            // Pointer that will be used as parameter
 			3,               // Task priority
 			NULL);           // Used to pass back a handle by which the created task can be referenced.
 
-	xTaskCreate(processReadings,           // Pointer to the task entry function
-			"process",         // Task name
+	xTaskCreate(processPowerWrapper,           // Pointer to the task entry function
+			"processPowerWrapper",         // Task name
 			STACK_SIZE,      // Stack size
 			NULL,            // Pointer that will be used as parameter
 			2,               // Task priority
 			NULL);           // Used to pass back a handle by which the created task can be referenced.
 
-	xTaskCreate(sendReadings,           // Pointer to the task entry function
-			"send",         // Task name
+	xTaskCreate(sendData,           // Pointer to the task entry function
+			"sendData",         // Task name
 			STACK_SIZE,      // Stack size
 			NULL,            // Pointer that will be used as parameter
 			1,               // Task priority
