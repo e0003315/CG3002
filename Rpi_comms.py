@@ -14,7 +14,7 @@ class Rpi_comms:
         #init wireless comms
         self.Ml = learning.learning()
         model = self.Ml.machineTrain()
-        data = numpy.empty((80, 12))
+        data = numpy.empty((60, 12))
         count = 0
        
         self.Wcomms = auth_client.client(ip_addr, port_num)
@@ -36,10 +36,11 @@ class Rpi_comms:
 #                 receivedData = [-15752,-1840,6484,571,1790,-97,-17156,-408,3104,4318,-1108,-2198]
 
 #                 print(receivedData)
-                count = count + 1
                 receivedData = self.Scomms.receiveData()
-                receivedData1 = input('enter plaintext')
-                if (count == 80) :
+                receivedData1 = input('1,2,3,4,5,6,7,8,9,10,11,12')
+                data[count] = [int(x) for x in receivedData1.split(',')]
+                count = count + 1
+                if (count == 60) :
                     move = self.Ml.processData(data, model)
                     print(move)
                     count = 0
