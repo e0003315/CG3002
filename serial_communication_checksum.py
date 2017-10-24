@@ -70,33 +70,34 @@ class serial_communication:
         global rcv
         global los
         global readings
-        data = self.readlineCR()
-        if (data == '0'):
-            print(rcv)
-            readings = rcv
-            los = len(rcv)
-            cs = self.checksum()
-            flag = True
-        if (data == '1'):
-            print(rcv)
-            if(los == int(rcv)): 
-                print('size is correct')
-            else :
-                print ('size is wrong')
-                flag = False
-                los = ""
-        if (data == '2'):
-            #print(rcv)
-            #print('calculated checksum is', ord(cs), 'received checksum is', ord(rcv))
-            if(ord(cs) == ord(rcv)):
-                print('checksum is correct')
-            else:
-                print('checksum is wrong')
-                flag = False
-            if(flag == True):
-                ser.write('1'.encode()); #ACK
-                print('ack')
-                return readings
-            else:
-                ser.write('2'.encode()); #NACK
-                print('nack')
+        while True:
+            data = self.readlineCR()
+            if (data == '0'):
+                print(rcv)
+                readings = rcv
+                los = len(rcv)
+                cs = self.checksum()
+                flag = True
+            if (data == '1'):
+                print(rcv)
+                if(los == int(rcv)): 
+                    print('size is correct')
+                else :
+                    print ('size is wrong')
+                    flag = False
+                    los = ""
+            if (data == '2'):
+                #print(rcv)
+                #print('calculated checksum is', ord(cs), 'received checksum is', ord(rcv))
+                if(ord(cs) == int(rcv)):
+                    print('checksum is correct')
+                else:
+                    print('checksum is wrong')
+                    flag = False
+                if(flag == True):
+                    ser.write('1'.encode()); #ACK
+                    print('ack')
+                    return readings
+                else:
+                    ser.write('2'.encode()); #NACK
+                    print('nack')
