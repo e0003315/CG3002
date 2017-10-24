@@ -39,8 +39,9 @@ int counter = 0;
 int power_counter =0;
 int flag =0;
 char data[1000] = "";
-char s[1000] = "";
-byte checksum = 0;
+char s[10] = "";
+char c[10] = "";
+char checksum;
 
 void readacc(){
   accelgyro1.getMotion6(&AcX1, &AcY1, &AcZ1, &GyX1, &GyY1, &GyZ1);
@@ -113,19 +114,17 @@ void handshake(){
 void serialize (){
   int i=0;
   checksum = '0';
-  int count=0;
-  //int16_t te stvar = 0;
-  //char dataSize[5];
   sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",AcX1,AcY1,AcZ1,GyX1,GyY1,GyZ1,AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2);
-  //sprintf(data, "%d", testvar);
-  sprintf(s, "%d", strlen(data));
-  //Serial.println(strlen(data));
-
+  sprintf(s, "%d%c", strlen(data), 's');
   char *p = data;
   while(*p != '\0'){
     checksum ^= *p;
     p++;
   }
+  sprintf(c, "%d%c", checksum, 'c');
+  strcat (data, "d");
+  strcat(data, s);
+  strcat(data, c);
 }
 
 void sendData(void *p){
@@ -135,29 +134,12 @@ void sendData(void *p){
   for( ;; ) {
     if (xSemaphoreTake(sendSemaphore, 1) == pdTRUE ) {
         serialize();
-        //char checksum[1] = "";
-        //sprintf(checksum, "%c", cs);
-        Serial2.write(data, strlen(data));
-        Serial2.write("d");
-        Serial2.write(s, strlen(s));
-        Serial2.write("s");
-        Serial2.write(checksum);
-        Serial2.write("c");
-//        Serial.print("data is");
-//        Serial.println(data);
-//        Serial.print("checksum is");
-//        Serial.println(checksum);
+        Serial2.write(data, strlen(data)); 
         if(Serial2.available()){
           char received = Serial2.read();
-          if(received ==  '2'){
-            //Got error so have to resend
+          if(received == '2'){
             serialize();
-            Serial2.write(data, strlen(data));
-            Serial2.write("d");
-            Serial2.write(s, strlen(s));
-            Serial2.write("s");
-            Serial2.write(checksum);
-            Serial2.write("c");
+            Serial2.write(data, strlen(data)); 
           }
         }
     }
