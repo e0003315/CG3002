@@ -37,14 +37,14 @@ class Rpi_comms:
 
 #                 print(receivedData)
                 receivedData = self.Scomms.receiveData()
-                receivedData1 = input('1,2,3,4,5,6,7,8,9,10,11,12')
+                receivedData1 = "1,2,3,4,5,6,7,8,9,10,11,12"
                 data[count] = [int(x) for x in receivedData1.split(',')]
                 count = count + 1
                 if (count == 60) :
                     move = self.Ml.processData(data, model)
                     print(move)
                     count = 0
-#                 self.Wcomms.sendData(receivedData)
+                self.Wcomms.sendData(receivedData)
                 #receivedData1 = 'wavehands|7|7|7|7|'
                 print(receivedData)
                 msg = self.Wcomms.packData(receivedData1)
