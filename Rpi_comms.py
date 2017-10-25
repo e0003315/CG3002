@@ -44,7 +44,7 @@ class Rpi_comms:
                     move = self.Ml.processData(data, model)
                     print(move)
                     count = 0
-                self.Wcomms.sendData(receivedData)
+#                 self.Wcomms.sendData(receivedData)
                 #receivedData1 = 'wavehands|7|7|7|7|'
                 print(receivedData)
                 msg = self.Wcomms.packData(receivedData1)
