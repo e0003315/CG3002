@@ -112,9 +112,23 @@ void handshake(){
 }
 
 void serialize (){
+  char temp[10];
   int i=0;
   checksum = '0';
-  sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",AcX1,AcY1,AcZ1,GyX1,GyY1,GyZ1,AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2);
+  sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d|",AcX1,AcY1,AcZ1,GyX1,GyY1,GyZ1,AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2);
+  dtostrf(current,1,3,&temp[0]);
+  strcat(data,temp);
+  strcat(data,"|");
+  dtostrf(voltage,1,3,&temp[0]);
+  strcat(data,temp);
+  strcat(data,"|");
+  dtostrf(power,1,3,&temp[0]);
+  strcat(data,temp);
+  strcat(data,"|");
+  dtostrf(cumPower,1,3,&temp[0]);
+  strcat(data,temp);
+  strcat(data,"|");
+   
   sprintf(s, "%d%c", strlen(data), 's');
   char *p = data;
   while(*p != '\0'){
