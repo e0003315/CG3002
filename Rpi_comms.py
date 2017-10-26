@@ -37,8 +37,13 @@ class Rpi_comms:
 
 #                 print(receivedData)
                 receivedData = self.Scomms.receiveData()
+                sensorData = receivedData.split('|')[0]
+                current = receivedData.split('|')[1]
+                voltage = receivedData.split('|')[2]
+                power = receivedData.split('|')[3]
+                cumpower = receivedData.split('|')[4]
                 receivedData1 = "1,2,3,4,5,6,7,8,9,10,11,12"
-                data[count] = [int(x) for x in receivedData1.split(',')]
+                data[count] = [int(x) for x in sensorData.split(',')]
                 count = count + 1
                 if (count == 60) :
                     move = self.Ml.processData(data, model)
@@ -47,7 +52,7 @@ class Rpi_comms:
 #                 self.Wcomms.sendData(receivedData)
                 #receivedData1 = 'wavehands|7|7|7|7|'
                 print(receivedData)
-                msg = self.Wcomms.packData(receivedData1)
+                msg = self.Wcomms.packData(move, current, voltage, power, cumpower)
                 sock.sendall(msg)
             except Exception as e:
                 print(e)

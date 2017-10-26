@@ -24,7 +24,7 @@ class client:
         print('%s' %paddedText)
         return paddedText
 
-    def packData(self, plainText):
-        encodedMsg = self.encryptText(plainText)
+    def packData(self, action, current, voltage, power, cumpower):
+        encodedMsg = self.encryptText(action +'|' + current + '|' + voltage + '|' + power + '|' + cumpower + '|')
         print('%s' %encodedMsg)
         return encodedMsg
