@@ -23,7 +23,7 @@ const float RL = 10;
 const int VOLTAGE_REF = 5;
 const int NUM_SAMPLES = 10;
 const float POTRATIO = 2;
-const int COUNTERSTOP = 8;
+const int COUNTERSTOP = 6;
 
 // Global Variables
 float current = 0;
