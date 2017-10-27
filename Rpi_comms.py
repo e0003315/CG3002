@@ -41,9 +41,9 @@ class Rpi_comms:
                 count = count + 1
                 if (count == 60) :
                     count = 0
-                    consecutiveCount = (consecutiveCount + 1) % 5
                     move = self.Ml.processData(data, model)
                     moveConcluded[consecutiveCount] = move
+                    consecutiveCount = (consecutiveCount + 1) % 5
                     # print(move)
                     if (x == moveConcluded[0] for x in moveConluded)	
                     	msg = self.Wcomms.packData(str(move), current, voltage, power, cumpower)
