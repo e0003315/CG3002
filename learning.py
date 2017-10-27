@@ -49,10 +49,10 @@ class learning:
     def machineTrain(self):
         # Load dataset
         # url = "C:/Users/CheeYeo/Desktop/CG3002/Code/Test case/TenMoves.csv" #CY's computer file path
-        url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Week11 Readings/6pplData.csv"
-        valiUrl = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Week11 Readings/ValidationDataSetWeek11.csv"
+        #url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Week11 Readings/6pplData.csv"
+        #valiUrl = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Week11 Readings/ValidationDataSetWeek11.csv"
 #         url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Test case/CompiledMoves.csv"  # Kelvin's computer file path
-        # url = "/home/pi/Desktop/CompiledMoves.csv"
+        url = "/home/pi/Desktop/6pplData.csv"
         # names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
         # dataset = pandas.read_csv(url, names=names)
         dataset = pandas.read_csv(url)
@@ -154,15 +154,16 @@ class learning:
         # Make predictions on validation dataset
         knn = KNeighborsClassifier(n_neighbors=3)
         knn.fit(X_train, Y_train)
-        predictions = knn.predict(X_validation)
+        print("exit training")
+        #predictions = knn.predict(X_validation)
 #         predictions = knn.predict(VALI_features)
-        print("Accuracy Score: ", accuracy_score(Y_validation, predictions), file=open('summary.txt', 'a'))
+        #print("Accuracy Score: ", accuracy_score(Y_validation, predictions), file=open('summary.txt', 'a'))
 #         print("Accuracy Score: ", accuracy_score(VALI_outputs, predictions), file=open('summary.txt', 'a'))
-        print("")
-        print("Confusion Matrix: \n", confusion_matrix(Y_validation, predictions, labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), file=open('summary.txt', 'a'))
+        #print("")
+        #print("Confusion Matrix: \n", confusion_matrix(Y_validation, predictions, labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), file=open('summary.txt', 'a'))
 #         print("Confusion Matrix: \n", confusion_matrix(VALI_outputs, predictions, labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), file=open('summary.txt', 'a'))
-        print("")
-        print("Classification Report: \n", classification_report(Y_validation, predictions), file=open('summary.txt', 'a'))
+        #print("")
+        #print("Classification Report: \n", classification_report(Y_validation, predictions), file=open('summary.txt', 'a'))
 #         print("Classification Report: \n", classification_report(VALI_outputs, predictions), file=open('summary.txt', 'a'))
         
 #         print("TEST\n")
@@ -192,5 +193,5 @@ class learning:
 #             print(predictions)
 #             a = input()
 
-run = learning()
-run.machineTrain()
+#run = learning()
+#run.machineTrain()

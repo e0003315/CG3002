@@ -36,10 +36,10 @@ class serial_communication:
         ack1 = ser.read().decode('ascii')
         if ack1 == '1':
             ser.write('1'.encode())
-            print('handshake pass')
+            #print('handshake pass')
             return True
         else:
-            print("\r\n\Handshake not completed!")
+            #print("\r\n\Handshake not completed!")
             return False
         
 
@@ -48,7 +48,7 @@ class serial_communication:
         global rcv
         for i in range (0, len(rcv)):
             ch = chr(ord(ch) ^ ord(rcv[i]))
-        print(ch) 
+        #print(ch) 
         return ch
 
 
@@ -73,31 +73,31 @@ class serial_communication:
         while True:
             data = self.readlineCR()
             if (data == '0'):
-                print(rcv)
+                #print(rcv)
                 readings = rcv
                 los = len(rcv)
                 cs = self.checksum()
                 flag = True
             if (data == '1'):
-                print(rcv)
-                if(los == int(rcv)): 
-                    print('size is correct')
-                else :
-                    print ('size is wrong')
+                #print(rcv)
+                if(los != int(rcv)): 
+                    #print('size is correct')
+                #else: 
+                    #print ('size is wrong')
                     flag = False
-                    los = ""
+                los = ""
             if (data == '2'):
                 #print(rcv)
                 #print('calculated checksum is', ord(cs), 'received checksum is', ord(rcv))
-                if(ord(cs) == int(rcv)):
-                    print('checksum is correct')
-                else:
-                    print('checksum is wrong')
+                if(ord(cs) != int(rcv)):
+                    #print('checksum is correct')
+                
+                    #print('checksum is wrong')
                     flag = False
                 if(flag == True):
                     ser.write('1'.encode()); #ACK
-                    print('ack')
+                    #print('ack')
                     return readings
                 else:
                     ser.write('2'.encode()); #NACK
-                    print('nack')
+                    #print('nack')
