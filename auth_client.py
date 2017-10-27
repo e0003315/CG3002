@@ -10,6 +10,7 @@ class client:
         
     def encryptText(self, plainText):
         iv = Random.new().read(AES.block_size)
+        print(plainText)
         key = "1234567890123456";
         secret_key = hashlib.sha256(key.encode()).digest()
         cipher = AES.new(key, AES.MODE_CBC, iv)
