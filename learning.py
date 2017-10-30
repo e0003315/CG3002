@@ -71,7 +71,7 @@ class learning:
         # label encode
         global le 
         le = preprocessing.LabelEncoder()
-        le.fit(['NoMove', 'WaveHand', 'BusDrive', 'FrontBack', 'SideStep', 'Jumping', 'jumpingJack', 'turnClap', 'squatTurnClap', 'window', 'window360'])
+        le.fit(['NoMove', 'WaveHand', 'BusDriver', 'FrontBack', 'SideStep', 'Jumping', 'jumpingJack', 'turnClap', 'squatTurnClap', 'window', 'window360'])
         Y_encoded = le.transform(Y)
 #         VALI_Y = le.transform(VALI_Y)
         
@@ -79,12 +79,13 @@ class learning:
         
         N = dataset.shape[0]
         dim_X = X.shape[1]
-        K = (N // shift_size) - 1
+        K = (N // shift_size) - 3
         segments_X = numpy.empty((K, window_size, dim_X))
         segments_Y = numpy.empty((K, window_size))
         
         for i in range(K):
             segment_X = X[i * shift_size : (i * shift_size) + window_size , :]
+            print(segment_X)
             segment_X = preprocessing.normalize(segment_X)
             segment_Y = Y_encoded[i * shift_size : (i * shift_size) + window_size]
             segments_X[i] = segment_X
@@ -193,5 +194,5 @@ class learning:
 #             print(predictions)
 #             a = input()
 
-#run = learning()
-#run.machineTrain()
+run = learning()
+run.machineTrain()
