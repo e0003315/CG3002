@@ -59,9 +59,11 @@ class server:
             # Receive the data in small chunks and retransmit it
             # while True: Change to 20 actions
             for x in range(21):
+            # while(True):
                 data = connection.recv(1024)
                 if data:
                         try:
+                            print(x)
                             msg = data.decode()
                             decodedmsg = self.auth.decryptText(msg,self.secret_key)
                             if decodedmsg['action'] == "logout  ":
