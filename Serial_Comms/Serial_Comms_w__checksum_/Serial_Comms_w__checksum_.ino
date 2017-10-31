@@ -58,13 +58,14 @@ void readData(void *p){
   xLastWakeTime = xTaskGetTickCount();
   for( ;; ) {
     readacc();
-    counter = counter+1;
+
 
     if(counter == COUNTERSTOP){
       counter = 0;
       voltageSum += analogRead(VOLTAGE_PIN);
       currentSum += analogRead(CURRENT_PIN); 
     }
+    counter = counter+1;
     xSemaphoreGive(processSemaphore);
     vTaskDelayUntil( &xLastWakeTime, xFrequency );
   }
@@ -72,12 +73,13 @@ void readData(void *p){
 
 void processPowerWrapper(void *p){
   for (;;) {
-     power_counter += 1;
      if (xSemaphoreTake (processSemaphore, 1) == pdTRUE) {
-        if (power_counter>=80){
+        if (power_counter>=62){
             processPower();
             power_counter =  0;
+            counter = 0;
         }
+        power_counter += 1;
         xSemaphoreGive(sendSemaphore);
      }
   }
@@ -125,7 +127,7 @@ void serialize (){
   dtostrf(power,1,3,&temp[0]);
   strcat(data,temp);
   strcat(data,"|");
-  dtostrf(cumPower,1,3,&temp[0]);
+  dtostrf(cumPower/3600,1,3,&temp[0]);
   strcat(data,temp);
   strcat(data,"|");
    
@@ -148,6 +150,7 @@ void sendData(void *p){
   for( ;; ) {
     if (xSemaphoreTake(sendSemaphore, 1) == pdTRUE ) {
         serialize();
+        Serial.println(data);
         Serial2.write(data, strlen(data)); 
         if(Serial2.available()){
           char received = Serial2.read();
