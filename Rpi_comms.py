@@ -45,7 +45,7 @@ class Rpi_comms:
                     moveConcluded[consecutiveCount] = move
                     consecutiveCount = (consecutiveCount + 1) % 5
                     # print(move)
-                    if ((x == moveConcluded[0] for x in moveConluded) && x != ["NoMove"])	
+                    if (all((x != ["NoMove"] and x == moveConcluded[0] for x in moveConluded))	
                     	msg = self.Wcomms.packData(str(move), current, voltage, power, cumpower)
                     	# print(msg)
                     	sock.sendall(msg)
