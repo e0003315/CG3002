@@ -18,16 +18,16 @@ class Rpi_comms:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect(server_address)
        
-        while ready == False:
-            #print('no handshake')
-            ready = self.Scomms.handshake()
+
 
         self.Ml = learning.learning()
         model = self.Ml.machineTrain()
         data = numpy.empty((60, 12))
         count = 0
-        moveConcluded = [5]
+        moveConcluded = [[],[],[],[],[]]
         consecutiveCount = 0
+        while ready == False:
+            ready = self.Scomms.handshake()
         while ready:
             try:
                 receivedData = self.Scomms.receiveData()
@@ -36,7 +36,7 @@ class Rpi_comms:
                 voltage = receivedData.split('|')[2]
                 power = receivedData.split('|')[3]
                 cumpower = receivedData.split('|')[4]
-                print([int(x) for x in sensorData.split(',')])
+                # print([int(x) for x in sensorData.split(',')])
                 data[count] = [int(x) for x in sensorData.split(',')]
                 count = count + 1
                 if (count == 60) :
@@ -49,6 +49,7 @@ class Rpi_comms:
                     	msg = self.Wcomms.packData(str(move), current, voltage, power, cumpower)
                     	# print(msg)
                     	sock.sendall(msg)
+                    	moveConcluded = [[],[],[],[],[]]
                     	# print('message sent')
                 #print(receivedData)
 
