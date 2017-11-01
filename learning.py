@@ -51,8 +51,8 @@ class learning:
         # url = "C:/Users/CheeYeo/Desktop/CG3002/Code/Test case/TenMoves.csv" #CY's computer file path
         #url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Week11 Readings/6pplData.csv"
         #valiUrl = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Week11 Readings/ValidationDataSetWeek11.csv"
-#         url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Test case/CompiledMoves.csv"  # Kelvin's computer file path
-        url = "/home/pi/Desktop/6pplData.csv"
+        url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/New 2/6pplData.csv"  # Kelvin's computer file path
+#         url = "/home/pi/Desktop/6pplData.csv"
         # names = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'activity']
         # dataset = pandas.read_csv(url, names=names)
         dataset = pandas.read_csv(url)
@@ -73,6 +73,12 @@ class learning:
         le = preprocessing.LabelEncoder()
         le.fit(['NoMove', 'WaveHand', 'BusDriver', 'FrontBack', 'SideStep', 'Jumping', 'jumpingJack', 'turnClap', 'squatTurnClap', 'window', 'window360'])
         Y_encoded = le.transform(Y)
+        print(le.inverse_transform([0]))
+        print(le.inverse_transform([1]))
+        print(le.inverse_transform([2]))
+        print(le.inverse_transform([3]))
+        print(le.inverse_transform([4]))
+        print(le.inverse_transform([5]))
 #         VALI_Y = le.transform(VALI_Y)
         
         # print(datetime.datetime.now().time())
@@ -85,7 +91,7 @@ class learning:
         
         for i in range(K):
             segment_X = X[i * shift_size : (i * shift_size) + window_size , :]
-            print(segment_X)
+#             print(segment_X)
             segment_X = preprocessing.normalize(segment_X)
             segment_Y = Y_encoded[i * shift_size : (i * shift_size) + window_size]
             segments_X[i] = segment_X
@@ -125,7 +131,7 @@ class learning:
         # print(datetime.datetime.now().time())
         
         validation_size = 0.2
-        seed = 5
+        seed = 7
         X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(features, outputs, test_size=validation_size, random_state=seed)
         
         # Test options and evaluation metric
@@ -156,15 +162,15 @@ class learning:
         knn = KNeighborsClassifier(n_neighbors=3)
         knn.fit(X_train, Y_train)
         print("exit training")
-        #predictions = knn.predict(X_validation)
+        predictions = knn.predict(X_validation)
 #         predictions = knn.predict(VALI_features)
-        #print("Accuracy Score: ", accuracy_score(Y_validation, predictions), file=open('summary.txt', 'a'))
+        print("Accuracy Score: ", accuracy_score(Y_validation, predictions), file=open('summary.txt', 'a'))
 #         print("Accuracy Score: ", accuracy_score(VALI_outputs, predictions), file=open('summary.txt', 'a'))
         #print("")
-        #print("Confusion Matrix: \n", confusion_matrix(Y_validation, predictions, labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), file=open('summary.txt', 'a'))
+        print("Confusion Matrix: \n", confusion_matrix(Y_validation, predictions, labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), file=open('summary.txt', 'a'))
 #         print("Confusion Matrix: \n", confusion_matrix(VALI_outputs, predictions, labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), file=open('summary.txt', 'a'))
         #print("")
-        #print("Classification Report: \n", classification_report(Y_validation, predictions), file=open('summary.txt', 'a'))
+        print("Classification Report: \n", classification_report(Y_validation, predictions), file=open('summary.txt', 'a'))
 #         print("Classification Report: \n", classification_report(VALI_outputs, predictions), file=open('summary.txt', 'a'))
         
 #         print("TEST\n")
