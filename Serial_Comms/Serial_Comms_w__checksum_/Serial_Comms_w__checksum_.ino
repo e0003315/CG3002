@@ -23,7 +23,7 @@ const float RL = 10;
 const int VOLTAGE_REF = 5;
 const int NUM_SAMPLES = 10;
 const float POTRATIO = 2;
-const int COUNTERSTOP = 6;
+const int COUNTERSTOP = 5;
 
 // Global Variables
 float current = 0;
@@ -74,7 +74,7 @@ void readData(void *p){
 void processPowerWrapper(void *p){
   for (;;) {
      if (xSemaphoreTake (processSemaphore, 1) == pdTRUE) {
-        if (power_counter>=62){
+        if (power_counter>=58){
             processPower();
             power_counter =  0;
             counter = 0;
