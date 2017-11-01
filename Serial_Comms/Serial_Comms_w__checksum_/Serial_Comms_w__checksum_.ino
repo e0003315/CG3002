@@ -18,10 +18,9 @@ SemaphoreHandle_t sendSemaphore = xSemaphoreCreateBinary();
 //Constants
 const int MPU1_addr=0x68;  // I2C address of the MPU-6050
 const int MPU2_addr=0x69;
-const float  RS = 0.1;
+const float RS = 0.1;
 const float RL = 10;
 const int VOLTAGE_REF = 5;
-const int NUM_SAMPLES = 10;
 const float POTRATIO = 2;
 const int COUNTERSTOP = 5;
 
@@ -42,6 +41,8 @@ char data[1000] = "";
 char s[10] = "";
 char c[10] = "";
 char checksum;
+int NUM_SAMPLES = 0;
+int a = 0;
 
 void readacc(){
   accelgyro1.getMotion6(&AcX1, &AcY1, &AcZ1, &GyX1, &GyY1, &GyZ1);
@@ -64,6 +65,7 @@ void readData(void *p){
       counter = 0;
       voltageSum += analogRead(VOLTAGE_PIN);
       currentSum += analogRead(CURRENT_PIN); 
+      NUM_SAMPLES = NUM_SAMPLES + 1;
     }
     counter = counter+1;
     xSemaphoreGive(processSemaphore);
@@ -76,6 +78,10 @@ void processPowerWrapper(void *p){
      if (xSemaphoreTake (processSemaphore, 1) == pdTRUE) {
         if (power_counter>=58){
             processPower();
+            Serial.print(a);
+            Serial.print("                ");
+            Serial.println(power_counter);
+            Serial.println(data);
             power_counter =  0;
             counter = 0;
         }
@@ -86,15 +92,21 @@ void processPowerWrapper(void *p){
 }
 
 void processPower(){
+    Serial.println(NUM_SAMPLES);
     voltage = (voltageSum / (float)NUM_SAMPLES * VOLTAGE_REF) / 1023.0;
+    //voltage += analogRead(VOLTAGE_PIN);
+    //current += analogRead(CURRENT_PIN); 
+    //voltage = (voltage * VOLTAGE_REF) / 1023.0;
     voltage = voltage * POTRATIO;
     avgVoltage = (avgVoltage + voltage)/2; 
-    current = (currentSum / (float)NUM_SAMPLES * VOLTAGE_REF) / 1023.0;
+    current = (currentSum / (float)NUM_SAMPLES * voltage) / 1023.0;
+    //current = (current * VOLTAGE_REF) / 1023.0;
     current = current / (RS*RL);
     power = current * voltage;
     cumPower += power * 1000 / avgVoltage;
     currentSum = 0;
     voltageSum = 0;
+    NUM_SAMPLES = 0;
 }
 
 void handshake(){
@@ -150,7 +162,7 @@ void sendData(void *p){
   for( ;; ) {
     if (xSemaphoreTake(sendSemaphore, 1) == pdTRUE ) {
         serialize();
-        Serial.println(data);
+        //Serial.println(data);
         Serial2.write(data, strlen(data)); 
         if(Serial2.available()){
           char received = Serial2.read();
@@ -201,8 +213,8 @@ void setup() {
   accelgyro2.setYGyroOffset(16);
   accelgyro2.setZGyroOffset(30);
 
-  handshake();
-  if (flag ==1){
+//  handshake();
+  if (flag ==0){
   xTaskCreate(readData,"readData", STACK_SIZE, NULL, 3,NULL);
   xTaskCreate(processPowerWrapper, "processPowerWrapper", STACK_SIZE, NULL, 2,NULL);
   xTaskCreate(sendData, "sendData", STACK_SIZE, NULL, 1,NULL);
