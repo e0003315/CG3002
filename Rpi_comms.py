@@ -26,6 +26,8 @@ class Rpi_comms:
         model = self.Ml.machineTrain()
         data = numpy.empty((60, 12))
         count = 0
+        moveConcluded = [5]
+        consecutiveCount = 0
         while ready:
             try:
                 receivedData = self.Scomms.receiveData()
@@ -38,13 +40,16 @@ class Rpi_comms:
                 data[count] = [int(x) for x in sensorData.split(',')]
                 count = count + 1
                 if (count == 60) :
-                    move = self.Ml.processData(data, model)
-                    print(move)
                     count = 0
-                    msg = self.Wcomms.packData(str(move), current, voltage, power, cumpower)
-                    print(msg)
-                    sock.sendall(msg)
-                    print('message sent')
+                    move = self.Ml.processData(data, model)
+                    moveConcluded[consecutiveCount] = move
+                    consecutiveCount = (consecutiveCount + 1) % 5
+                    # print(move)
+                    if (all((x != ["NoMove"] and x == moveConcluded[0] for x in moveConcluded))):
+                    	msg = self.Wcomms.packData(str(move), current, voltage, power, cumpower)
+                    	# print(msg)
+                    	sock.sendall(msg)
+                    	# print('message sent')
                 #print(receivedData)
 
             except Exception as e:
