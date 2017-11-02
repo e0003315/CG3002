@@ -30,7 +30,7 @@ class learning:
     
     def processData(self, data, model):
         segment_X = preprocessing.normalize(data)
-        features = numpy.empty(36)
+        features = numpy.empty(72)
         for j in range(0, features.shape[0] - 1, 3):
             features[j] = segment_X[ : , j // 3].mean()
             features[j + 1] = segment_X[ : , j // 3].std()
