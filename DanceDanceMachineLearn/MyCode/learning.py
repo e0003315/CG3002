@@ -21,11 +21,6 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from cProfile import label
 
-pandas.set_option('display.height', 1000)
-pandas.set_option('display.max_rows', 500)
-pandas.set_option('display.max_columns', 500)
-pandas.set_option('display.width', 1000)
-pandas.set_option('display.expand_frame_repr', False)
 class learning:
     def _init_(self):
         super(learning, self)._init_()
