@@ -21,9 +21,8 @@ const int MPU2_addr=0x69;
 const float  RS = 0.1;
 const float RL = 10;
 const int VOLTAGE_REF = 5;
-const int NUM_SAMPLES = 10;
 const float POTRATIO = 2;
-const int COUNTERSTOP = 6;
+const int COUNTERSTOP = 5;
 
 // Global Variables
 float current = 0;
@@ -42,6 +41,7 @@ char data[1000] = "";
 char s[10] = "";
 char c[10] = "";
 char checksum;
+int NUM_SAMPLES = 0;
 
 void readacc(){
   accelgyro1.getMotion6(&AcX1, &AcY1, &AcZ1, &GyX1, &GyY1, &GyZ1);
@@ -60,10 +60,11 @@ void readData(void *p){
     readacc();
 
 
-    if(counter == COUNTERSTOP){
+    if(counter >= COUNTERSTOP){
       counter = 0;
       voltageSum += analogRead(VOLTAGE_PIN);
-      currentSum += analogRead(CURRENT_PIN); 
+      currentSum += analogRead(CURRENT_PIN);
+      NUM_SAMPLES = NUM_SAMPLES + 1; 
     }
     counter = counter+1;
     xSemaphoreGive(processSemaphore);
@@ -74,7 +75,7 @@ void readData(void *p){
 void processPowerWrapper(void *p){
   for (;;) {
      if (xSemaphoreTake (processSemaphore, 1) == pdTRUE) {
-        if (power_counter>=62){
+        if (power_counter>=58){
             processPower();
             power_counter =  0;
             counter = 0;
@@ -90,11 +91,12 @@ void processPower(){
     voltage = voltage * POTRATIO;
     avgVoltage = (avgVoltage + voltage)/2; 
     current = (currentSum / (float)NUM_SAMPLES * VOLTAGE_REF) / 1023.0;
-    current = current / (RS*RL);
+    current = current / (RS*RL) * 1.25;
     power = current * voltage;
     cumPower += power * 1000 / avgVoltage;
     currentSum = 0;
     voltageSum = 0;
+    NUM_SAMPLES = 0;
 }
 
 void handshake(){
