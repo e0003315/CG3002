@@ -42,7 +42,6 @@ char s[10] = "";
 char c[10] = "";
 char checksum;
 int NUM_SAMPLES = 0;
-int a = 0;
 
 void readacc(){
   accelgyro1.getMotion6(&AcX1, &AcY1, &AcZ1, &GyX1, &GyY1, &GyZ1);
@@ -53,14 +52,10 @@ void readData(void *p){
   TickType_t xLastWakeTime;
   const TickType_t xFrequency = 1;
 
-  
-
   // Initialize the xLastWakeTime variable with the current time.
   xLastWakeTime = xTaskGetTickCount();
   for( ;; ) {
     readacc();
-
-
     if(counter == COUNTERSTOP){
       counter = 0;
       voltageSum += analogRead(VOLTAGE_PIN);
@@ -78,10 +73,6 @@ void processPowerWrapper(void *p){
      if (xSemaphoreTake (processSemaphore, 1) == pdTRUE) {
         if (power_counter>=58){
             processPower();
-            Serial.print(a);
-            Serial.print("                ");
-            Serial.println(power_counter);
-            Serial.println(data);
             power_counter =  0;
             counter = 0;
         }
@@ -92,16 +83,11 @@ void processPowerWrapper(void *p){
 }
 
 void processPower(){
-    Serial.println(NUM_SAMPLES);
     voltage = (voltageSum / (float)NUM_SAMPLES * VOLTAGE_REF) / 1023.0;
-    //voltage += analogRead(VOLTAGE_PIN);
-    //current += analogRead(CURRENT_PIN); 
-    //voltage = (voltage * VOLTAGE_REF) / 1023.0;
     voltage = voltage * POTRATIO;
     avgVoltage = (avgVoltage + voltage)/2; 
-    current = (currentSum / (float)NUM_SAMPLES * voltage) / 1023.0;
-    //current = (current * VOLTAGE_REF) / 1023.0;
-    current = current / (RS*RL);
+    current = (currentSum / (float)NUM_SAMPLES * VOLTAGE_REF) / 1023.0;
+    current = current / (RS*RL) *1.25;
     power = current * voltage;
     cumPower += power * 1000 / avgVoltage;
     currentSum = 0;
@@ -213,8 +199,8 @@ void setup() {
   accelgyro2.setYGyroOffset(16);
   accelgyro2.setZGyroOffset(30);
 
-//  handshake();
-  if (flag ==0){
+  handshake();
+  if (flag ==1){
   xTaskCreate(readData,"readData", STACK_SIZE, NULL, 3,NULL);
   xTaskCreate(processPowerWrapper, "processPowerWrapper", STACK_SIZE, NULL, 2,NULL);
   xTaskCreate(sendData, "sendData", STACK_SIZE, NULL, 1,NULL);
