@@ -53,7 +53,7 @@ class learning:
         dataset = pandas.read_csv(url)
 #         validation = pandas.read_csv(valiUrl)
         global window_size
-        window_size = 120
+        window_size = 60
         shift_size = 15
         models = []
         models.append(('KNN', KNeighborsClassifier(n_neighbors=7)))
@@ -84,15 +84,18 @@ class learning:
         N = dataset.shape[0]
         dim_X = X.shape[1]
         K = (N // shift_size) - 7
-        segments_X = numpy.empty((K, window_size, dim_X))
+        segments_X = numpy.empty((K, window_size, dim_X*2))
         segments_Y = numpy.empty((K, window_size))
         
         for i in range(K):
             segment_X = X[i * shift_size : (i * shift_size) + window_size , :]
+            segment_X2 = X[i * shift_size + window_size : (i * shift_size) + 2*window_size , :]
 #             print(segment_X)
             segment_X = preprocessing.normalize(segment_X)
-            segment_Y = Y_encoded[i * shift_size : (i * shift_size) + window_size]
-            segments_X[i] = segment_X
+            segment_X2 = preprocessing.normalize(segment_X2)
+            segment_Y = Y_encoded[i * shift_size + window_size: (i * shift_size) + 2*window_size]
+            segments_X[i, : , :dim_X] = segment_X
+            segments_X[i, : , dim_X:2*dim_X] = segment_X2
             segments_Y[i] = segment_Y
         
 #         N = validation.shape[0]
@@ -107,7 +110,7 @@ class learning:
 #             VALI_segments_X[i] = segment_X
 #             VALI_segments_Y[i] = segment_Y
         
-        features = numpy.empty((K, 36))
+        features = numpy.empty((K, 72))
         outputs = numpy.empty((K))
 #         VALI_features = numpy.empty((K, 36))
 #         VALI_outputs = numpy.empty((K))
