@@ -18,47 +18,41 @@ class Rpi_comms:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect(server_address)
        
-        file = 'wavehands.csv'
-        csv = open(file, "w")
-        #while ready == False:
-            #print('no handshake')
-            #ready = self.Scomms.handshake()
+
 
         self.Ml = learning.learning()
         model = self.Ml.machineTrain()
-        data = numpy.empty((120, 12))
+        data = numpy.zeros((60, 24))                  #1
         count = 0
-        moveConcluded = [[],[],[]]
+        moveConcluded = [[],[],[],[],[]]
         consecutiveCount = 0
-
         while ready == False:
             ready = self.Scomms.handshake()
- #       while True:
         while ready:
             try:
                 receivedData = self.Scomms.receiveData()
                 sensorData = receivedData.split('|')[0]
-                csv.write(sensorData + '\n')
                 current = receivedData.split('|')[1]
                 voltage = receivedData.split('|')[2]
                 power = receivedData.split('|')[3]
                 cumpower = receivedData.split('|')[4]
-                print(receivedData)
-               #print([int(x) for x in sensorData.split(',')])
-                data[count] = [int(x) for x in sensorData.split(',')]
+                # print([int(x) for x in sensorData.split(',')])
+                data[count, 12:24] = [int(x) for x in sensorData.split(',')]   #2
                 count = count + 1
-                if (count == 120) :
+                if (count == 60) :
                     count = 0
                     move = self.Ml.processData(data, model)
+                    data[:, :12] = data[:, 12:24]                           #3
                     moveConcluded[consecutiveCount] = move
-                    consecutiveCount = (consecutiveCount + 1) % 3
-                    print(move)
-                    if (all((x != ["NoMove"] and x == moveConcluded[0]) for x in moveConcluded)) :
-                        msg = self.Wcomms.packData(str(move), current, voltage, power, cumpower)
-                        #print(msg)
-                        sock.sendall(msg)
-                        moveConcluded = [[],[],[]]
+                    consecutiveCount = (consecutiveCount + 1) % 5
+                    # print(move)
+                    if (all((x != ["NoMove"] and x == moveConcluded[0] for x in moveConcluded))):
+                    	msg = self.Wcomms.packData(str(move), current, voltage, power, cumpower)
+                    	# print(msg)
+                    	sock.sendall(msg)
+                    	moveConcluded = [[],[],[],[],[]]
                     	# print('message sent')
+                #print(receivedData)
 
             except Exception as e:
                 print(e)

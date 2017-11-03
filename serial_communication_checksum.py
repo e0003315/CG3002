@@ -1,7 +1,7 @@
 import serial
 import time
 
-ser = serial.Serial('/dev/ttyAMA0', 115200)
+ser = serial.Serial('/dev/ttyAMA0', 115200, timeout = None)
 
 class serial_communication:
     def __init__(self):
@@ -71,7 +71,9 @@ class serial_communication:
         global los
         global readings
         while True:
+#            print("before")
             data = self.readlineCR()
+ #           print("after")
             if (data == '0'):
                 #print(rcv)
                 readings = rcv
