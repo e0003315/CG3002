@@ -31,7 +31,14 @@ class learning:
         return mean(absolute(data-mean(data,axis)), axis)
     
     def processData(self, data, model):
-        segment_X = preprocessing.normalize(data)
+        
+        segment_X = numpy.empty(window_size,12)
+
+        segment_X[:,0:3] = normalizerAcc.transform(data[:,0:3])
+        segment_X[:,3:6] = normalizerGyro.transform(data[:,3:6])
+        segment_X[:,6:9] = normalizerAcc.transform(data[:,6:9])
+        segment_X[:,9:12] = normalizerGyro.transform(data[:,9:12])
+
         features = numpy.empty(36)
         for j in range(0, features.shape[0] - 1, 3):
             features[j] = segment_X[ : , j // 3].mean()
@@ -42,30 +49,48 @@ class learning:
     
     def machineTrain(self):
         # Load dataset
-        #url = "C:/Users/CheeYeo/Desktop/CG3002/Code/nextFiveMovesv1/6pplData2.csv" #CY's computer file path
+        # url = "C:/Users/CheeYeo/Desktop/CG3002/Code/Move6to11[V1]/6pplData2.csv" #CY's computer file path
         #url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Week11 Readings/6pplData.csv"
         #url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/New 2/6pplData.csv"  # Kelvin's computer file path
         url = "/home/pi/Desktop/6pplData.csv"
-        dataset = pandas.read_csv(url)
+        dataset = pandas.read_csv(url, header=None)
         
         global window_size
         window_size = 120
-        shift_size = 30
+        shift_size = 15
         models = []
         models.append(('KNN', KNeighborsClassifier(n_neighbors=7)))
-        knn = KNeighborsClassifier(n_neighbors=3)
+        knn = KNeighborsClassifier(n_neighbors=7)
         
         # Split-out validation dataset
         array = dataset.values
         X = array[:, 0:12]
         Y = array[:, 12]
+        
+        # Declaring acc and gyro array
+        accData = numpy.empty((array.shape[0], 6))
+        gyroData = numpy.empty((array.shape[0], 6))
+        
+        accData[:, :3] = array[:, :3]
+        accData[:,3:6] = array[:, 6:9]
+        gyroData[:,:3] = array[:, 3:6]
+        gyroData[:,3:6] = array[:, 9:12]
+
+        # Creating the normalizer
+        global normalizerAcc
+        global normalizerGyro
+        normalizerAcc = preprocessing.Normalizer().fit(accData)
+        normalizerGyro = preprocessing.Normalizer().fit(gyroData)
+
+        # Normalizing the data
+        accData = normalizerAcc.transform(accData)
+        gyroData = normalizerGyro.transform(gyroData)
 
         # label encode
         global le 
         le = preprocessing.LabelEncoder()
         le.fit(['NoMove', 'wavehands', 'busdriver', 'frontback', 'sidestep', 'jumping', 'jumpingjack', 'turnclap', 'squatturnclap', 'window', 'window360', 'final'])
         Y_encoded = le.transform(Y)
-        print(Y_encoded)
 #         print(le.inverse_transform([0]))
 #         print(le.inverse_transform([1]))
 #         print(le.inverse_transform([2]))
@@ -79,20 +104,21 @@ class learning:
         segments_X = numpy.empty((K, window_size, dim_X))
         segments_Y = numpy.empty((K, window_size))
         
+        segment_X = numpy.empty((window_size, dim_X))
         for i in range(K):
-            segment_X = X[i * shift_size : (i * shift_size) + window_size , :]
-            # segment_X = preprocessing.normalize(segment_X)
+            segment_X[:, :6] = accData[i * shift_size : (i*shift_size) + window_size, :]
+            segment_X[:,6:12] = gyroData[i * shift_size: (i*shift_size) + window_size, :]
             segment_Y = Y_encoded[i * shift_size : (i * shift_size) + window_size]
             segments_X[i] = segment_X
             segments_Y[i] = segment_Y
         
         # for i in range(K):
-        #     segment_X[0:3] = X[i * shift_size : (i * shift_size) + window_size , :3]
-        #     segment_X[3:6] = X[i * shift_size : (i * shift_size) + window_size , 6:]
+        #     segment_X = X[i * shift_size : (i * shift_size) + window_size , :]
         #     # segment_X = preprocessing.normalize(segment_X)
         #     segment_Y = Y_encoded[i * shift_size : (i * shift_size) + window_size]
         #     segments_X[i] = segment_X
         #     segments_Y[i] = segment_Y
+
         
         features = numpy.empty((K, 36))
         outputs = numpy.empty((K))
