@@ -32,7 +32,7 @@ class learning:
     
     def processData(self, data, model):
         
-        segment_X = numpy.empty(window_size,12)
+        segment_X = numpy.empty((window_size,12))
 
         segment_X[:,0:3] = normalizerAcc.transform(data[:,0:3])
         segment_X[:,3:6] = normalizerGyro.transform(data[:,3:6])
