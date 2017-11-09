@@ -85,6 +85,7 @@ class learning:
         # Creating the normalizer
         global normalizerAcc
         global normalizerGyro
+
         normalizerAcc = preprocessing.Normalizer().fit(accData)
         normalizerGyro = preprocessing.Normalizer().fit(gyroData)
 
