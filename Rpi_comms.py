@@ -26,7 +26,7 @@ class Rpi_comms:
 
         self.Ml = learning.learning()
         model = self.Ml.machineTrain()
-        data = numpy.empty((120, 12))
+        data = numpy.zeros((30, 36))
         count = 0
         moveConcluded = [[],[],[]]
         consecutiveCount = 0
@@ -43,15 +43,17 @@ class Rpi_comms:
                 voltage = receivedData.split('|')[2]
                 power = receivedData.split('|')[3]
                 cumpower = receivedData.split('|')[4]
-                print(receivedData)
+                #print(receivedData)
                #print([int(x) for x in sensorData.split(',')])
-                data[count] = [int(x) for x in sensorData.split(',')]
+                data[count, 24:36] = [int(x) for x in sensorData.split(',')]
                 count = count + 1
-                if (count == 120) :
+                if (count == 30) :
                     count = 0
                     move = self.Ml.processData(data, model)
                     moveConcluded[consecutiveCount] = move
                     consecutiveCount = (consecutiveCount + 1) % 3
+                    data[:,:12] = data[:,12:24]
+                    data[:,12:24] = data[:,24:36]
                     print(move)
                     if (all((x != ["NoMove"] and x == moveConcluded[0]) for x in moveConcluded)) :
                         msg = self.Wcomms.packData(str(move), current, voltage, power, cumpower)
