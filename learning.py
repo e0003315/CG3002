@@ -79,12 +79,16 @@ class learning:
         # Creating the normalizer
         global normalizerAcc
         global normalizerGyro
+        print("Creating normalizer")
         normalizerAcc = preprocessing.Normalizer().fit(accData)
         normalizerGyro = preprocessing.Normalizer().fit(gyroData)
+        print("Finished creating normalizer")
 
         # Normalizing the data
+        print("Normalizing the training data")
         accData = normalizerAcc.transform(accData)
         gyroData = normalizerGyro.transform(gyroData)
+        print("Finished normalizing the training data")
 
         # label encode
         global le 
