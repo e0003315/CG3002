@@ -18,22 +18,23 @@ class Rpi_comms:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect(server_address)
        
-        file = 'wavehands.csv'
+        file = 'takingReadings.csv'
         csv = open(file, "w")
         #while ready == False:
             #print('no handshake')
             #ready = self.Scomms.handshake()
-
+        print("Entering training")
         self.Ml = learning.learning()
         model = self.Ml.machineTrain()
         data = numpy.zeros((30, 36))
         count = 0
         moveConcluded = [[],[],[]]
         consecutiveCount = 0
-
+        print("Entering handshake")
         while ready == False:
             ready = self.Scomms.handshake()
- #       while True:
+
+        print("Entering data receiving mode")
         while ready:
             try:
                 receivedData = self.Scomms.receiveData()
@@ -43,18 +44,19 @@ class Rpi_comms:
                 voltage = receivedData.split('|')[2]
                 power = receivedData.split('|')[3]
                 cumpower = receivedData.split('|')[4]
-                #print(receivedData)
                #print([int(x) for x in sensorData.split(',')])
-                data[count, 24:36] = [int(x) for x in sensorData.split(',')]
+                #data[count, 24:36] = [int(x) for x in sensorData.split(',')]
+                data[count%30, (count//30) * 12 : (count//30)*12 + 12] = [int(x) for x in sensorData.split(',')]
                 count = count + 1
-                if (count == 30) :
+                if (count == 90) :
                     count = 0
                     move = self.Ml.processData(data, model)
                     moveConcluded[consecutiveCount] = move
                     consecutiveCount = (consecutiveCount + 1) % 3
-                    data[:,:12] = data[:,12:24]
-                    data[:,12:24] = data[:,24:36]
+                    #data[:,:12] = data[:,12:24]
+                    #data[:,12:24] = data[:,24:36]
                     print(move)
+                    print(sensorData)
                     if (all((x != ["NoMove"] and x == moveConcluded[0]) for x in moveConcluded)) :
                         msg = self.Wcomms.packData(str(move), current, voltage, power, cumpower)
                         #print(msg)
