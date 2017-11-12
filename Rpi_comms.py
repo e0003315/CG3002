@@ -58,7 +58,7 @@ class Rpi_comms:
                     print(move)
                     print(sensorData)
                     if (all((x != ["NoMove"] and x == moveConcluded[0]) for x in moveConcluded)) :
-                        msg = self.Wcomms.packData(str(move), current, voltage, power, cumpower)
+                        msg = self.Wcomms.packData(str(move), voltage, current, power, cumpower)
                         #print(msg)
                         sock.sendall(msg)
                         moveConcluded = [[],[],[]]
