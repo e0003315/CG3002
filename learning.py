@@ -50,7 +50,7 @@ class learning:
         segment_X[:,18:24] = normalizerGyro.transform(data[:,18:24])
         segment_X[:,24:30] = normalizerAcc.transform(data[:,24:30])
         segment_X[:,30:36] = normalizerGyro.transform(data[:,30:36])
-        print(segment_X[:, 0:12])
+        #print(segment_X[:, 0:12])
         # segment_X[:,27:33] = normalizerAcc.transform(data[:,36:42])
         # segment_X[:,33:36] = normalizerGyro.transform(data[:,42:45])
         # segment_X[:,15:18] = normalizerAcc.transform(data[:,18:21])
@@ -75,11 +75,13 @@ class learning:
         url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/NewSensorReadings/6pplData.csv"  # Kelvin's computer file path
         urlFeature = "C:/Users/User/Documents/SEM5/CG3002/Project3002/features.csv"
         # url = "/home/pi/Desktop/6pplData.csv"
+        #url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/NewSensorReadings/6pplData.csv"  # Kelvin's computer file path
+        #url = "/home/pi/Desktop/6pplData.csv"
         dataset = pandas.read_csv(url, header=None)
         
         global window_size
         window_size = 30
-        shift_size = 90
+        shift_size = 30
         models = []
         models.append(('KNN', KNeighborsClassifier(n_neighbors=7)))
         knn = KNeighborsClassifier(n_neighbors=7)#, weights = 'distance')

@@ -34,6 +34,7 @@ float power = 0;
 float cumPower = 0;
 int16_t AcX1,AcY1,AcZ1,GyX1,GyY1,GyZ1;
 int16_t AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2;
+int16_t AcX3,AcY3,AcZ3,GyX3,GyY3,GyZ3;
 int counter = 0;
 int power_counter =0;
 int flag =0;
@@ -45,7 +46,12 @@ int NUM_SAMPLES = 0;
 
 void readacc(){
   accelgyro1.getMotion6(&AcX1, &AcY1, &AcZ1, &GyX1, &GyY1, &GyZ1);
+  digitalWrite(8,LOW);
   accelgyro2.getMotion6(&AcX2, &AcY2, &AcZ2, &GyX2, &GyY2, &GyZ2);
+  digitalWrite(8,HIGH);
+  digitalWrite(7,LOW);
+  accelgyro2.getMotion6(&AcX3, &AcY3, &AcZ3, &GyX3, &GyY3, &GyZ3);
+  digitalWrite(7,HIGH);
 }
 
 void readData(void *p){
@@ -119,7 +125,7 @@ void serialize (){
   char temp[10];
   int i=0;
   checksum = '0';
-  sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d|",AcX1,AcY1,AcZ1,GyX1,GyY1,GyZ1,AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2);
+  sprintf(data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d|",AcX2,AcY2,AcZ2,AcX1,AcY1,AcZ1,GyX3,GyY3,GyZ3,GyX1,GyY1,GyZ1);
   dtostrf(current,1,3,&temp[0]);
   strcat(data,temp);
   strcat(data,"|");
@@ -152,7 +158,7 @@ void sendData(void *p){
   for( ;; ) {
     if (xSemaphoreTake(sendSemaphore, 1) == pdTRUE ) {
         serialize();
-        Serial.println(data);
+//        Serial.println(data);
         Serial2.write(data, strlen(data)); 
         if(Serial2.available()){
           char received = Serial2.read();
@@ -172,6 +178,8 @@ void setup() {
 
   pinMode(7, OUTPUT);
   digitalWrite(7, HIGH);
+  pinMode(8,OUTPUT);
+  digitalWrite(8,HIGH);
 
     // join I2C bus (I2Cdev library doesn't do this automatically)
   #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -190,8 +198,8 @@ void setup() {
   accelgyro1.setXGyroOffset(99);
   accelgyro1.setYGyroOffset(-9);
   accelgyro1.setZGyroOffset(-97);
-  accelgyro1.setFullScaleAccelRange(MPU6050_ACCEL_FS_4);
-
+  accelgyro1.setFullScaleAccelRange(MPU6050_ACCEL_FS_4);  
+ 
   accelgyro2.initialize();
   accelgyro2.dmpInitialize(); 
   accelgyro2.setDMPEnabled(true);
@@ -199,9 +207,9 @@ void setup() {
   accelgyro2.setXAccelOffset(-1459);
   accelgyro2.setYAccelOffset(3527);
   accelgyro2.setZAccelOffset(1094);
-  accelgyro2.setXGyroOffset(42);
-  accelgyro2.setYGyroOffset(16);
-  accelgyro2.setZGyroOffset(30);
+  accelgyro2.setXGyroOffset(99);
+  accelgyro2.setYGyroOffset(-9);
+  accelgyro2.setZGyroOffset(-10);
 
   handshake();
   if (flag ==1){

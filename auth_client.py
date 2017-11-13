@@ -27,6 +27,8 @@ class client:
 
     def packData(self, action, voltage, current, power, cumpower):
         action1 = action[2:len(action)-2]
+        if (action1 == 'final'):
+            action1 = 'logout'
         encodedMsg = self.encryptText(action1 +'|' + voltage + 'V|' + current + 'mA|' + power + 'W|' + cumpower + 'W|')
         print('%s' %encodedMsg)
         return encodedMsg

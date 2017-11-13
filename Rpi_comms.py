@@ -30,6 +30,7 @@ class Rpi_comms:
         count = 0
         moveConcluded = [[],[],[]]
         consecutiveCount = 0
+        finalflag =0 
         print("Entering handshake")
         while ready == False:
             ready = self.Scomms.handshake()
@@ -46,7 +47,8 @@ class Rpi_comms:
                 cumpower = receivedData.split('|')[4]
                #print([int(x) for x in sensorData.split(',')])
                 #data[count, 24:36] = [int(x) for x in sensorData.split(',')]
-                data[count%30, (count//30) * 12 : (count//30)*12 + 12] = [int(x) for x in sensorData.split(',')]
+                if (count >= 0):
+                    data[count%30, (count//30) * 12 : (count//30)*12 + 12] = [int(x) for x in sensorData.split(',')]
                 count = count + 1
                 if (count == 120) :
                     count = 0
@@ -55,12 +57,17 @@ class Rpi_comms:
                     consecutiveCount = (consecutiveCount + 1) % 3
                     #data[:,:12] = data[:,12:24]
                     #data[:,12:24] = data[:,24:36]
+                    if (move == ["final"]):
+                        finalflag = 1
                     print(move)
                     print(sensorData)
-                    if (all((x != ["NoMove"] and x == moveConcluded[0]) for x in moveConcluded)) :
-                        msg = self.Wcomms.packData(str(move), current, voltage, power, cumpower)
+                    if (all((x != ["nomove"] and x == moveConcluded[0]) for x in moveConcluded)) :
+                        count = -90
+                        msg = self.Wcomms.packData(str(move), voltage, current, power, cumpower)
                         #print(msg)
                         sock.sendall(msg)
+                        if (finalflag):
+                            break
                         moveConcluded = [[],[],[]]
                     	# print('message sent')
 
