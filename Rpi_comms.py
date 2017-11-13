@@ -48,7 +48,7 @@ class Rpi_comms:
                 #data[count, 24:36] = [int(x) for x in sensorData.split(',')]
                 data[count%30, (count//30) * 12 : (count//30)*12 + 12] = [int(x) for x in sensorData.split(',')]
                 count = count + 1
-                if (count == 90) :
+                if (count == 120) :
                     count = 0
                     move = self.Ml.processData(data, model)
                     moveConcluded[consecutiveCount] = move
@@ -58,7 +58,7 @@ class Rpi_comms:
                     print(move)
                     print(sensorData)
                     if (all((x != ["NoMove"] and x == moveConcluded[0]) for x in moveConcluded)) :
-                        msg = self.Wcomms.packData(str(move), voltage, current, power, cumpower)
+                        msg = self.Wcomms.packData(str(move), current, voltage, power, cumpower)
                         #print(msg)
                         sock.sendall(msg)
                         moveConcluded = [[],[],[]]

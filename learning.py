@@ -50,6 +50,9 @@ class learning:
         segment_X[:,18:24] = normalizerGyro.transform(data[:,18:24])
         segment_X[:,24:30] = normalizerAcc.transform(data[:,24:30])
         segment_X[:,30:36] = normalizerGyro.transform(data[:,30:36])
+        print(segment_X[:, 0:12])
+        # segment_X[:,27:33] = normalizerAcc.transform(data[:,36:42])
+        # segment_X[:,33:36] = normalizerGyro.transform(data[:,42:45])
         # segment_X[:,15:18] = normalizerAcc.transform(data[:,18:21])
         # segment_X[:,21:24] = normalizerGyro.transform(data[:,21:24])
         # segment_X[:,24:27] = normalizerAcc.transform(data[:,24:27])
@@ -70,12 +73,13 @@ class learning:
         # url = "C:/Users/CheeYeo/Desktop/CG3002/Code/Move6to11[V1]/6pplData2.csv" #CY's computer file path
         #url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/Week11 Readings/6pplData.csv"
         url = "C:/Users/User/Documents/SEM5/CG3002/Project3002/NewSensorReadings/6pplData.csv"  # Kelvin's computer file path
+        urlFeature = "C:/Users/User/Documents/SEM5/CG3002/Project3002/features.csv"
         # url = "/home/pi/Desktop/6pplData.csv"
         dataset = pandas.read_csv(url, header=None)
         
         global window_size
         window_size = 30
-        shift_size = 180
+        shift_size = 90
         models = []
         models.append(('KNN', KNeighborsClassifier(n_neighbors=7)))
         knn = KNeighborsClassifier(n_neighbors=7)#, weights = 'distance')
@@ -105,6 +109,9 @@ class learning:
         accData = normalizerAcc.transform(accData)
         gyroData = normalizerGyro.transform(gyroData)
 
+        # for i in range(30):
+        #     print(str(accData[i]) + str(gyroData[i]) + "\n")
+
         # label encode
         global le 
         le = preprocessing.LabelEncoder()
@@ -120,10 +127,10 @@ class learning:
         dim_X = X.shape[1]
         #dim_X = 6
         K = (N // shift_size) - 15
-        segments_X = numpy.empty((K, window_size, 3*dim_X))
+        segments_X = numpy.empty((K, window_size, 3*(dim_X)))
         segments_Y = numpy.empty((K, 3*window_size))
         
-        segment_X = numpy.empty((window_size, 3*dim_X))
+        segment_X = numpy.empty((window_size, 3*(dim_X)))
         for i in range(K):
             segment_X[:, :6] = accData[i * shift_size : (i*shift_size) + window_size, :]
             segment_X[:,6:12] = gyroData[i * shift_size: (i*shift_size) + window_size, :]
@@ -131,6 +138,8 @@ class learning:
             segment_X[:, 18:24] = gyroData[i * shift_size + window_size: (i*shift_size) + 2*window_size, :]
             segment_X[:, 24:30] = accData[i * shift_size + 2*window_size : (i*shift_size) + 3*window_size, :]
             segment_X[:, 30:36] = gyroData[i * shift_size + 2*window_size: (i*shift_size) + 3*window_size, :]
+            # segment_X[:, 27:33] = accData[i * shift_size + 3*window_size : (i*shift_size) + 4*window_size, :]
+            # segment_X[:, 33:36] = gyroData[i * shift_size + 3*window_size: (i*shift_size) + 4*window_size, :3]
             segment_Y = Y_encoded[i * shift_size : (i * shift_size) + 3*window_size]
             segments_X[i] = segment_X
             segments_Y[i] = segment_Y
@@ -144,6 +153,9 @@ class learning:
 
         
         features = numpy.empty((K, 72))
+        
+        # print(features)
+        # numpy.savetxt("features.csv", features, delimiter = ",", fmt = '%s')
         outputs = numpy.empty((K))
         
         for i in range(K):
@@ -154,6 +166,8 @@ class learning:
 
             outputs[i] = stats.mode(segments_Y[i])[0]
         validation_size = 0.2
+        df = pandas.DataFrame(outputs)
+        df.to_csv("outputs.csv", header = None)
         seed = 7
         X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(features, outputs, test_size=validation_size, random_state=seed)
 
