@@ -46,7 +46,8 @@ class Rpi_comms:
                 cumpower = receivedData.split('|')[4]
                #print([int(x) for x in sensorData.split(',')])
                 #data[count, 24:36] = [int(x) for x in sensorData.split(',')]
-                data[count%30, (count//30) * 12 : (count//30)*12 + 12] = [int(x) for x in sensorData.split(',')]
+                if (count >= 0):
+                    data[count%30, (count//30) * 12 : (count//30)*12 + 12] = [int(x) for x in sensorData.split(',')]
                 count = count + 1
                 if (count == 90) :
                     count = 0
@@ -57,7 +58,8 @@ class Rpi_comms:
                     #data[:,12:24] = data[:,24:36]
                     print(move)
                     print(sensorData)
-                    if (all((x != ["NoMove"] and x == moveConcluded[0]) for x in moveConcluded)) :
+                    if (all((x != ["nomove"] and x == moveConcluded[0]) for x in moveConcluded)) :
+                        count = -90
                         msg = self.Wcomms.packData(str(move), voltage, current, power, cumpower)
                         #print(msg)
                         sock.sendall(msg)
