@@ -94,10 +94,10 @@ void processPowerWrapper(void *p){
 
 void processPower(){
     voltage = (voltageSum / (float)NUM_SAMPLES * VOLTAGE_REF) / 1023.0;
-    voltage = voltage * POTRATIO;
+    voltage = voltage * POTRATIO * (5/5.17);
     avgVoltage = (avgVoltage + voltage)/2; 
     current = (currentSum / (float)NUM_SAMPLES * VOLTAGE_REF) / 1023.0;
-    current = current / (RS*RL) * 1.25;
+    current = current / (RS*RL) * 1.17;
     power = current * voltage;
     cumPower += power * 1000 / avgVoltage;
     currentSum = 0;
@@ -158,7 +158,7 @@ void sendData(void *p){
   for( ;; ) {
     if (xSemaphoreTake(sendSemaphore, 1) == pdTRUE ) {
         serialize();
-//        Serial.println(data);
+        //Serial.println(data);
         Serial2.write(data, strlen(data)); 
         if(Serial2.available()){
           char received = Serial2.read();
