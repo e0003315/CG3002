@@ -28,9 +28,8 @@ class Rpi_comms:
         model = self.Ml.machineTrain()
         data = numpy.zeros((30, 36))
         count = 0
-        moveConcluded = [[],[],[]]
+        moveConcluded = [[],[]]
         consecutiveCount = 0
-        finalflag =0 
         print("Entering handshake")
         while ready == False:
             ready = self.Scomms.handshake()
@@ -50,25 +49,26 @@ class Rpi_comms:
                 if (count >= 0):
                     data[count%30, (count//30) * 12 : (count//30)*12 + 12] = [int(x) for x in sensorData.split(',')]
                 count = count + 1
-                if (count == 120) :
+                if (count == 90) :
                     count = 0
                     move = self.Ml.processData(data, model)
                     moveConcluded[consecutiveCount] = move
-                    consecutiveCount = (consecutiveCount + 1) % 3
+                    consecutiveCount = (consecutiveCount + 1) % 2
                     #data[:,:12] = data[:,12:24]
                     #data[:,12:24] = data[:,24:36]
-                    if (move == ["final"]):
-                        finalflag = 1
                     print(move)
                     print(sensorData)
                     if (all((x != ["nomove"] and x == moveConcluded[0]) for x in moveConcluded)) :
-                        count = -90
+                        if (move == ["turnclap"] or move == ["squatturnclap"] or move ==["windowcleaner360"]) :
+                            count = -90
+                        else :
+                            count = -60
                         msg = self.Wcomms.packData(str(move), voltage, current, power, cumpower)
                         #print(msg)
                         sock.sendall(msg)
-                        if (finalflag):
+                        if (move == ["final"]):
                             break
-                        moveConcluded = [[],[],[]]
+                        moveConcluded = [[],[]]
                     	# print('message sent')
 
             except Exception as e:

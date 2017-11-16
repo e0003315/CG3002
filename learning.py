@@ -120,14 +120,20 @@ class learning:
         # label encode
         global le 
         le = preprocessing.LabelEncoder()
-        le.fit(['nomove', 'wavehands', 'busdriver', 'frontback', 'sidestep', 'jumping', 'jumpingjack', 'turnclap', 'squatturnclap', 'window', 'window360', 'final'])
+        le.fit(['nomove', 'wavehands', 'busdriver', 'frontback', 'sidestep', 'jumping', 'jumpingjack', 'turnclap', 'squatturnclap', 'windowcleaning', 'windowcleaner360', 'final'])
 #        Y_encoded = le.transform(Y)
-#         print(le.inverse_transform([0]))
-#         print(le.inverse_transform([1]))
-#         print(le.inverse_transform([2]))
-#         print(le.inverse_transform([3]))
-#         print(le.inverse_transform([4]))
-#         print(le.inverse_transform([5]))
+        # print(le.inverse_transform([0]))
+        # print(le.inverse_transform([1]))
+        # print(le.inverse_transform([2]))
+        # print(le.inverse_transform([3]))
+        # print(le.inverse_transform([4]))
+        # print(le.inverse_transform([5]))
+        # print(le.inverse_transform([6]))
+        # print(le.inverse_transform([7]))
+        # print(le.inverse_transform([8]))
+        # print(le.inverse_transform([9]))
+        # print(le.inverse_transform([10]))
+        # print(le.inverse_transform([11]))
         # N = dataset.shape[0]
         # dim_X = X.shape[1]
         # #dim_X = 6
