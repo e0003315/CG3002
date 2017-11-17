@@ -36,9 +36,9 @@ int16_t AcX1,AcY1,AcZ1,GyX1,GyY1,GyZ1;
 int16_t AcX2,AcY2,AcZ2,GyX2,GyY2,GyZ2;
 int16_t AcX3,AcY3,AcZ3,GyX3,GyY3,GyZ3;
 int counter = 0;
-int power_counter =0;
-int flag =0;
-char data[1000] = "";
+int power_counter = 0;
+int flag = 0;
+char data[840] = "";
 char s[10] = "";
 char c[10] = "";
 char checksum;
@@ -108,15 +108,15 @@ void processPower(){
 void handshake(){
   Serial.println("In handshake!");
   while (flag !=1) {
-  if(Serial2.available()){
-      char received = Serial2.read();
-      if(received == '0'){
-        Serial2.write('1');
-      }
-      if (received == '1'){
-        flag = 1;
-      }
-   }
+    while(Serial2.available() == 0){
+    }
+    char received = Serial2.read();
+    if(received == '0'){
+      Serial2.write('1');
+    }
+    if (received == '1'){
+      flag = 1;
+    }
   }
   Serial.println("Out handshake");
 }
@@ -158,14 +158,14 @@ void sendData(void *p){
   for( ;; ) {
     if (xSemaphoreTake(sendSemaphore, 1) == pdTRUE ) {
         serialize();
-        //Serial.println(data);
+        Serial.println(data);
         Serial2.write(data, strlen(data)); 
-        if(Serial2.available()){
-          char received = Serial2.read();
-          if(received == '2'){
-            serialize();
-            Serial2.write(data, strlen(data)); 
-          }
+        while(Serial2.available() == 0){ 
+          //Wait here until serial2 receives data
+        }
+        char received = Serial2.read();
+        if(received == '2'){
+          Serial2.write(data, strlen(data)); 
         }
     }
   }
@@ -211,8 +211,8 @@ void setup() {
   accelgyro2.setYGyroOffset(-9);
   accelgyro2.setZGyroOffset(-10);
 
-  handshake();
-  if (flag ==1){
+  //handshake();
+  if (flag ==0){
   xTaskCreate(readData,"readData", STACK_SIZE, NULL, 3,NULL);
   xTaskCreate(processPowerWrapper, "processPowerWrapper", STACK_SIZE, NULL, 2,NULL);
   xTaskCreate(sendData, "sendData", STACK_SIZE, NULL, 1,NULL);
