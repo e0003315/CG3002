@@ -102,4 +102,4 @@ class serial_communication:
                     return readings
                 else:
                     ser.write('2'.encode()); #NACK
-                    #print('nack')
+                    print('error')

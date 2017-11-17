@@ -29,7 +29,7 @@ class client:
         action1 = action[2:len(action)-2]
         if (action1 == 'final'):
             action1 = 'logout'
-        encodedMsg = self.encryptText(action1 +'|' + voltage + 'V|' + current + 'mA|' + power + 'W|' + cumpower + 'W|')
+        encodedMsg = self.encryptText(action1 +'|' + voltage + 'V|' + current + 'A|' + power + 'W|' + cumpower + 'mAh|')
         print('%s' %encodedMsg)
         return encodedMsg
 
